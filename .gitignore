@@ -3,8 +3,9 @@ dist/
 .env
 .env.*
 !.env.example
-blockchain/artifacts/
-blockchain/cache/
-blockchain/coverage/
-blockchain/ignition/deployments/
 *.log
+
+# Remix generated compiler output, imported dependencies and VM state
+artifacts/
+.deps/
+.states/
