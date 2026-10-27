@@ -1,57 +1,58 @@
-# Sample Hardhat 3 Project (`mocha` and `ethers`)
+# Smart contract với Remix Desktop
 
-This project showcases a Hardhat 3 project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+Đây là workspace Solidity. Hiện chưa có contract gọi vốn hoặc bài test nghiệp vụ. Không chạy npm install trong thư mục này.
 
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## Mở workspace
 
-## Project Overview
+1. Cài [Remix Desktop bản Windows](https://remix.live/desktop).
+2. Dùng chức năng mở thư mục/workspace của ứng dụng và chọn chính thư mục `blockchain` trong repository.
+3. Nhật Minh tạo `contracts/Crowdfunding.sol`. Các thành viên dùng file này từ bản clone Git, không duy trì một bản code khác chỉ nằm trong trình duyệt.
 
-This example project includes:
+## Biên dịch khi có mã Solidity
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+1. Mở file contract và bật plugin Solidity Compiler.
+2. Chọn compiler phù hợp với `pragma solidity` trong source. Nhóm ghi số phiên bản chính xác, EVM target, trạng thái optimizer và số runs vào phần cấu hình bên dưới.
+3. Bấm Compile và xử lý hết lỗi trước khi deploy.
+4. Nếu cần làm offline, tải compiler khi còn có mạng trước.
 
-## Usage
+## Cấu hình contract
 
-### Running Tests
+Chưa chốt cấu hình vì nhóm chưa viết contract. Người thêm contract đầu tiên cần điền đầy đủ các trường sau trong cùng Pull Request:
 
-To run all the tests in the project, execute the following command:
+| Trường | Giá trị |
+| --- | --- |
+| Solidity compiler | Chưa chọn |
+| EVM target | Chưa chọn |
+| Optimizer bật hay tắt | Chưa chọn |
+| Optimizer runs nếu bật | Chưa chọn |
 
-```shell
-npx hardhat test
-```
+## Thử bằng Remix VM
 
-You can also selectively run the Solidity or `mocha` tests:
+1. Mở Deploy & Run Transactions.
+2. Chọn Remix VM tương thích với EVM target của contract.
+3. Chọn contract, nhập constructor arguments nếu có, để Value bằng 0 nếu constructor không payable, rồi Deploy.
+4. Trong Deployed Contracts, thử các hàm bằng tài khoản mô phỏng. Để góp ETH, nhập Value và đúng đơn vị trước khi gọi hàm payable; sau đó đưa Value về 0 khi gọi hàm không nhận tiền.
+5. Ghi lại kết quả thực tế. Chưa có bài test thì không đánh dấu đã kiểm thử thành công.
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
-```
+Remix VM là môi trường thử trong IDE. Frontend React + MetaMask không tự nhìn thấy contract ở môi trường này.
 
-### Make a deployment to Sepolia
+## Kiểm thử tự động trong IDE
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+Bật Solidity Unit Testing ở Plugin Manager, chọn thư mục `/tests` và viết các file kết thúc bằng `_test.sol`. Plugin cung cấp thư viện assert `remix_tests.sol`. Chi tiết nhiệm vụ test nằm trong [tests/README.md](tests/README.md).
 
-To run the deployment to a local chain:
+## Triển khai để kết nối React
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
+1. Nhóm thống nhất một mạng EVM mà MetaMask truy cập được, ví dụ testnet. Chỉ thêm một node local có RPC nếu thực sự cần chạy hoàn toàn trên máy.
+2. Trong Remix Desktop chọn provider qua ví trình duyệt. Tùy phiên bản, nhãn có thể là Browser Extension hoặc Injected Provider. Ứng dụng có thể mở trình duyệt để nối với MetaMask.
+3. Kiểm tra đúng mạng trong ví, deploy bằng ETH thử nghiệm và chờ giao dịch xác nhận.
+4. Xuất ABI tại Solidity Compiler > Compilation Details. Lưu mảng ABI vào `../frontend/src/contracts/Crowdfunding.json` theo hướng dẫn trong thư mục đó.
+5. Ghi mạng, chain ID, địa chỉ contract, transaction hash, compiler settings và commit source trong `deployments/`.
+6. Lý Hiền dùng đúng ABI và địa chỉ trên cùng mạng để viết phần tích hợp ethers.
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+Thay đổi code rồi compile lại không cập nhật contract đã deploy. Phải triển khai phiên bản mới nếu cần và bàn giao lại địa chỉ cùng ABI tương ứng.
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+## Tài liệu chính thức
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+- [Remix Desktop](https://remix-ide.readthedocs.io/en/latest/desktop.html)
+- [Deploy và môi trường chạy](https://remix-ide.readthedocs.io/en/latest/run.html)
+- [Solidity Unit Testing](https://remix-ide.readthedocs.io/en/latest/unittesting.html)
