@@ -26,10 +26,14 @@ export function shortAddress(address) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
+export function hasReachedGoal(campaign) {
+  const raised = campaign.totalRaisedEth === '0' ? 0n : parseAmount(campaign.totalRaisedEth)
+  return raised >= parseAmount(campaign.goalEth)
+}
+
 export function campaignStatus(campaign, now = Date.now()) {
   if (new Date(campaign.deadline).getTime() > now) return 'active'
-  const raised = campaign.totalRaisedEth === '0' ? 0n : parseAmount(campaign.totalRaisedEth)
-  return raised >= parseAmount(campaign.goalEth) ? 'successful' : 'unsuccessful'
+  return hasReachedGoal(campaign) ? 'successful' : 'unsuccessful'
 }
 
 export const statusLabels = {

@@ -1,12 +1,25 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { applyOperation, campaignStatus, createDemoData, DEMO_ACCOUNTS, formatAmount, parseAmount } from '../src/lib/demoModel.js'
+import { applyOperation, campaignStatus, createDemoData, DEMO_ACCOUNTS, formatAmount, hasReachedGoal, parseAmount } from '../src/lib/demoModel.js'
 
 const [alice, bob] = DEMO_ACCOUNTS
 
 test('ETH keeps all 18 decimal digits and rejects invalid amounts', () => {
   assert.equal(formatAmount(parseAmount('0.100000000000000001')), '0.100000000000000001')
   for (const amount of ['0', '-1', '1e3', '0,1', '0.0000000000000000001']) assert.throws(() => parseAmount(amount))
+})
+
+test('funding goal comparison distinguishes a one-wei gap and handles zero funding', () => {
+  const now = Date.now()
+  const campaign = { goalEth: '1.000000000000000001', totalRaisedEth: '1', deadline: new Date(now + 60000).toISOString() }
+  assert.equal(hasReachedGoal(campaign), false)
+  assert.equal(campaignStatus(campaign, now), 'active')
+  assert.equal(campaignStatus(campaign, now + 60000), 'unsuccessful')
+  assert.equal(hasReachedGoal({ ...campaign, totalRaisedEth: '0' }), false)
+  assert.equal(hasReachedGoal({ ...campaign, totalRaisedEth: campaign.goalEth }), true)
+  const exceeded = { ...campaign, totalRaisedEth: '1.000000000000000002' }
+  assert.equal(hasReachedGoal(exceeded), true)
+  assert.equal(campaignStatus(exceeded, now + 60000), 'successful')
 })
 
 test('multiple contributions add exactly and do not change other campaigns', () => {

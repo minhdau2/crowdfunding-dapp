@@ -14,7 +14,7 @@
 4. Viết source trong `contracts/`, test trong `tests/` và chạy bằng các plugin Remix tương ứng.
 5. Muốn mở React, chạy npm ci và npm run dev ở `frontend` trong terminal riêng.
 
-Các thư mục contract/test hiện được chuẩn bị cho nhóm bắt đầu viết. Chưa có chức năng gọi vốn hoàn chỉnh.
+Contract V2 có hash tài chính/biên lai và 25 ca test trong repository. V1 đã deploy trên Sepolia; V2 chưa deploy. Frontend hiện chạy mô phỏng; bước tiếp theo là chạy lại test trong Remix Desktop, deploy V2 lên Sepolia và tích hợp ví theo [giao diện contract](contract-interface.md).
 
 ## Bàn giao theo từng vai trò
 
@@ -26,7 +26,7 @@ Các thư mục contract/test hiện được chuẩn bị cho nhóm bắt đầ
 
 ## Mạng thử và mạng tích hợp
 
-Remix VM dùng để thử contract ngay trong IDE. Ba máy có ba môi trường thử riêng. Frontend bên ngoài không tự kết nối vào VM này qua MetaMask. Khi làm demo React, nhóm cần triển khai từ Remix qua ví lên một testnet chung, hoặc bổ sung một node local có RPC và cùng cấu hình mạng đó cho ví. Đừng nhập địa chỉ Remix VM sang testnet.
+Remix VM dùng để thử contract ngay trong IDE. Ba máy có ba môi trường thử riêng. Frontend bên ngoài không tự kết nối vào VM này qua MetaMask. Khi làm demo React, nhóm triển khai từ Remix qua ví lên **Ethereum Sepolia**, chain ID **11155111**, rồi dùng chung địa chỉ đã xác nhận. Đừng nhập địa chỉ Remix VM sang testnet.
 
 Không cần cài thêm một blockchain framework cho việc biên dịch trong Remix. Việc chọn testnet/node RPC là bước triển khai cho frontend, không phải thay IDE.
 
@@ -35,11 +35,11 @@ Không cần cài thêm một blockchain framework cho việc biên dịch trong
 - Source lưu trong repository, không chỉ trong bộ nhớ ứng dụng.
 - Contract đã compile; test ghi rõ kết quả thực tế và các ca chưa bao phủ.
 - ABI, địa chỉ và mạng khớp nhau nếu PR có tích hợp.
-- Nếu đổi frontend, chạy npm run build và npm run lint tại frontend.
+- Nếu đổi frontend, chạy npm test, npm run build và npm run lint tại frontend.
 - Không có khóa ví, .env, compiler output hoặc dependencies được stage.
 - Nhờ một bạn khác review rồi mới merge.
 
-## Quy tắc gọi vốn đề xuất
+## Quy tắc gọi vốn hiện tại
 
 Chỉ góp khi còn hạn. Chờ hết hạn và đủ mục tiêu thì chủ dự án mới rút được một lần. Nếu hết hạn và thiếu mục tiêu thì mỗi người tự gửi giao dịch yêu cầu hoàn khoản đã góp. Contract không tự chạy theo đồng hồ khi không có giao dịch kích hoạt.
 

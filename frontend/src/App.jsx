@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CampaignList from './pages/CampaignList'
 import CreateCampaign from './pages/CreateCampaign'
 import CampaignDetail from './pages/CampaignDetail'
@@ -13,6 +13,7 @@ function Site() {
   const [route, setRoute] = useState(window.location.hash || '#/')
   const [menuOpen, setMenuOpen] = useState(false)
   const demo = useDemo()
+  const mainRef = useRef(null)
   useEffect(() => {
     const update = () => { setRoute(window.location.hash || '#/'); setMenuOpen(false); window.scrollTo(0, 0) }
     window.addEventListener('hashchange', update)
@@ -25,8 +26,13 @@ function Site() {
     try { await navigator.clipboard.writeText(demo.account); demo.setNotice('Đã sao chép địa chỉ ví mẫu.') }
     catch { demo.setNotice(`Không sao chép tự động được. Địa chỉ ví: ${demo.account}`) }
   }
+  function skipToMain(event) {
+    event.preventDefault()
+    mainRef.current?.focus()
+    mainRef.current?.scrollIntoView({ block: 'start' })
+  }
   return <div className="app">
-    <a className="skip-link" href="#main-content">Đến nội dung chính</a>
+    <a className="skip-link" href="#main-content" onClick={skipToMain}>Đến nội dung chính</a>
     <header className="site-header">
       <a className="brand" href="#/"><span aria-hidden="true">C</span> Chung Tay</a>
       <button className="mobile-menu secondary-button" aria-expanded={menuOpen} aria-controls="main-nav" onClick={() => setMenuOpen(!menuOpen)}>Menu</button>
@@ -43,7 +49,7 @@ function Site() {
     {demo.wrongNetwork && <div className="network-warning" role="alert">Đang chọn sai mạng mô phỏng. <button onClick={() => demo.setWrongNetwork(false)}>Chuyển về Sepolia mẫu</button></div>}
     {demo.storageWarning && <p className="network-warning" role="alert">{demo.storageWarning}</p>}
     {demo.notice && <div className="notice" role="status"><span>{demo.notice}</span><button aria-label="Đóng thông báo" onClick={() => demo.setNotice('')}>×</button></div>}
-    <main id="main-content" tabIndex="-1">
+    <main ref={mainRef} id="main-content" tabIndex="-1">
       {path === '/' ? <><section className="hero"><p className="eyebrow">GỌI VỐN CỘNG ĐỒNG</p><h1>Ý tưởng nhỏ.<br />Thay đổi lớn.</h1><p className="hero-description">Khám phá những dự án ý nghĩa và cùng nhau tạo nên giá trị cho cộng đồng.</p><a className="primary-link" href="#/create">Bắt đầu một chiến dịch <span aria-hidden="true">↗</span></a></section><CampaignList /></> : path === '/create' ? <CreateCampaign /> : detailId !== null ? <CampaignDetail key={detailId} id={detailId} /> : ['/mine', '/contributions', '/favorites'].includes(path) ? <AccountCampaigns key={path} mode={path.slice(1)} /> : <section className="empty-state"><h1>Không tìm thấy trang</h1><a href="#/">Về khám phá chiến dịch</a></section>}
     </main>
     <footer><span>Chung Tay · Đồ án Crowdfunding DApp</span><span>Giao diện thử nghiệm · ETH mô phỏng</span></footer>

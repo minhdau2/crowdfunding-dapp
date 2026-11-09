@@ -1,55 +1,67 @@
 # Smart contract với Remix Desktop
 
-Đây là workspace Solidity. Hiện chưa có contract gọi vốn hoặc bài test nghiệp vụ. Không chạy npm install trong thư mục này.
+`contracts/Crowdfunding.sol` là contract gọi vốn của ứng dụng Chung Tay. Một lần deploy quản lý nhiều chiến dịch; không có tham số constructor. Mở trực tiếp thư mục `blockchain` bằng Remix Desktop; không cần chạy npm trong thư mục này.
 
-## Mở workspace
-
-1. Cài [Remix Desktop bản Windows](https://remix.live/desktop).
-2. Dùng chức năng mở thư mục/workspace của ứng dụng và chọn chính thư mục `blockchain` trong repository.
-3. Nhật Minh tạo `contracts/Crowdfunding.sol`. Các thành viên dùng file này từ bản clone Git, không duy trì một bản code khác chỉ nằm trong trình duyệt.
-
-## Biên dịch khi có mã Solidity
-
-1. Mở file contract và bật plugin Solidity Compiler.
-2. Chọn compiler phù hợp với `pragma solidity` trong source. Nhóm ghi số phiên bản chính xác, EVM target, trạng thái optimizer và số runs vào phần cấu hình bên dưới.
-3. Bấm Compile và xử lý hết lỗi trước khi deploy.
-4. Nếu cần làm offline, tải compiler khi còn có mạng trước.
-
-## Cấu hình contract
-
-Chưa chốt cấu hình vì nhóm chưa viết contract. Người thêm contract đầu tiên cần điền đầy đủ các trường sau trong cùng Pull Request:
+## Cấu hình biên dịch
 
 | Trường | Giá trị |
 | --- | --- |
-| Solidity compiler | Chưa chọn |
-| EVM target | Chưa chọn |
-| Optimizer bật hay tắt | Chưa chọn |
-| Optimizer runs nếu bật | Chưa chọn |
+| Solidity compiler | **0.8.34** (`0.8.34+commit.80d5c536`) |
+| EVM target | **cancun** |
+| Optimizer | **Enabled** |
+| Optimizer runs | **200** |
+| Via IR | **Tắt** |
+| Contract để deploy | **Crowdfunding**, file `contracts/Crowdfunding.sol` |
+| Constructor arguments | Không có |
+| Mạng tích hợp | **Ethereum Sepolia**, chain ID **11155111** |
 
-## Thử bằng Remix VM
+Trong Solidity Compiler, chọn các giá trị trên, mở `contracts/Crowdfunding.sol` rồi bấm Compile. Các thiết lập EVM/optimizer nằm trong Advanced Configurations. Nếu dùng offline, cần tải compiler trước khi mất mạng.
 
-1. Mở Deploy & Run Transactions.
-2. Chọn Remix VM tương thích với EVM target của contract.
-3. Chọn contract, nhập constructor arguments nếu có, để Value bằng 0 nếu constructor không payable, rồi Deploy.
-4. Trong Deployed Contracts, thử các hàm bằng tài khoản mô phỏng. Để góp ETH, nhập Value và đúng đơn vị trước khi gọi hàm payable; sau đó đưa Value về 0 khi gọi hàm không nhận tiền.
-5. Ghi lại kết quả thực tế. Chưa có bài test thì không đánh dấu đã kiểm thử thành công.
+## Quy tắc nghiệp vụ đã cài đặt
 
-Remix VM là môi trường thử trong IDE. Frontend React + MetaMask không tự nhìn thấy contract ở môi trường này.
+- `createCampaign(title, description, goal, deadline)`: người gọi là chủ chiến dịch; mục tiêu > 0 wei, hạn chót ở tương lai.
+- `contribute(id)`: góp ETH dương trước hạn, được góp nhiều lần và vượt mục tiêu. Chủ chiến dịch cũng được góp.
+- `withdraw(id)`: chỉ chủ chiến dịch, khi **đã hết hạn và đủ mục tiêu**, rút toàn bộ tiền chiến dịch một lần, gồm phần vượt mục tiêu.
+- `refund(id)`: khi **đã hết hạn và thiếu mục tiêu**, mỗi ví tự gửi giao dịch nhận lại toàn bộ khoản mình đã góp một lần.
+- Không có phí nền tảng, admin, hủy chiến dịch hay sửa nội dung/hạn chót sau khi tạo.
+- Tổng tiền đã góp và lịch sử từng ví được giữ sau khi thanh toán. `totalRefunded`, `withdrawn`, `refunded` ghi nhận phần đã xử lý.
 
-## Kiểm thử tự động trong IDE
+Contract không tự gửi tiền khi đồng hồ hết hạn. Chủ chiến dịch hoặc người góp cần gọi hàm rút/hoàn và trả phí gas. Mô tả và tên chiến dịch lưu công khai trên blockchain; danh mục, ảnh, bình luận và yêu thích thuộc lớp giao diện/dữ liệu ngoài chain.
 
-Bật Solidity Unit Testing ở Plugin Manager, chọn thư mục `/tests` và viết các file kết thúc bằng `_test.sol`. Plugin cung cấp thư viện assert `remix_tests.sol`. Chi tiết nhiệm vụ test nằm trong [tests/README.md](tests/README.md).
+## Hash tài chính và biên lai (bản source V2)
 
-## Triển khai để kết nối React
+- Khi tạo chiến dịch, contract tự lưu hash của chain ID, địa chỉ contract, ID chiến dịch, ví chủ, mục tiêu và hạn chót, có domain và phiên bản schema. Đọc bằng `campaignHash(id)`.
+- Mỗi lần góp/rút/hoàn thành công có một receipt ID toàn cục, hash riêng và event `PaymentReceipt` chứa ID chiến dịch, ví thực hiện, loại thao tác và số wei thực tế. Đọc bằng `receiptHash(receiptId)`.
+- Hash dùng `keccak256(abi.encode(...))`, không nhận hash, ID người dùng MongoDB hay số tiền tự khai từ frontend. Giao dịch revert thì biên lai và bộ đếm cũng hoàn tác.
+- Tổng tiền và số góp từng ví vẫn là trạng thái on-chain, thay đổi sau các giao dịch hợp lệ. Hash cố định của chiến dịch không chứa các tổng này. Tên/mô tả vẫn chưa có hàm sửa.
 
-1. Nhóm thống nhất một mạng EVM mà MetaMask truy cập được, ví dụ testnet. Chỉ thêm một node local có RPC nếu thực sự cần chạy hoàn toàn trên máy.
-2. Trong Remix Desktop chọn provider qua ví trình duyệt. Tùy phiên bản, nhãn có thể là Browser Extension hoặc Injected Provider. Ứng dụng có thể mở trình duyệt để nối với MetaMask.
-3. Kiểm tra đúng mạng trong ví, deploy bằng ETH thử nghiệm và chờ giao dịch xác nhận.
-4. Xuất ABI tại Solidity Compiler > Compilation Details. Lưu mảng ABI vào `../frontend/src/contracts/Crowdfunding.json` theo hướng dẫn trong thư mục đó.
-5. Ghi mạng, chain ID, địa chỉ contract, transaction hash, compiler settings và commit source trong `deployments/`.
-6. Lý Hiền dùng đúng ABI và địa chỉ trên cùng mạng để viết phần tích hợp ethers.
+Xem schema và cách đối chiếu trong [contract-interface.md](../docs/contract-interface.md). Hash không mã hóa dữ liệu và không thay thế việc xác minh API/giao diện với blockchain; bước này mới bổ sung nền tảng contract và ABI.
 
-Thay đổi code rồi compile lại không cập nhật contract đã deploy. Phải triển khai phiên bản mới nếu cần và bàn giao lại địa chỉ cùng ABI tương ứng.
+## Thử thủ công trong Remix VM
+
+1. Chạy bộ test theo [tests/README.md](tests/README.md).
+2. Mở lại `contracts/Crowdfunding.sol`, compile, vào Deploy & Run Transactions. Chọn Remix VM hỗ trợ Cancun hoặc mới hơn.
+3. Chọn đúng **Crowdfunding**, để Value = **0**, bấm Deploy. Không deploy `CrowdfundingHarness` hoặc các contract test làm contract ứng dụng.
+4. Lấy deadline bằng terminal JavaScript: `Math.floor(Date.now() / 1000) + 300` (5 phút sau). Gọi `createCampaign` với tên, mô tả, goal = `10000000000000000` (0.01 ETH), deadline vừa tính. ID đầu tiên là `1`.
+5. Đổi tài khoản mô phỏng, đặt Value = `0.01`, đơn vị **ether**, gọi `contribute(1)`. Đưa Value về **0** sau đó. Đọc `getCampaign(1)` và `contributions(1, địa_chỉ_ví)`.
+6. Chưa hết hạn thì `withdraw(1)` phải bị chặn dù đã đủ vốn. Sau hạn, đổi về tài khoản chủ chiến dịch để rút; kiểm tra `withdrawn = true` và `getAvailableFunds(1) = 0`.
+7. Tạo chiến dịch khác có mục tiêu cao hơn số góp. Sau hạn, ví đã góp gọi `refund(id)`; lần gọi thứ hai phải bị chặn. `totalRaised` và `contributions` vẫn là lịch sử ban đầu.
+
+Thời gian quyết định là `block.timestamp` của blockchain, theo giây Unix. Tại đúng deadline: đóng góp bị chặn, rút/hoàn được xét điều kiện. Remix VM không tự cung cấp RPC để React + MetaMask bên ngoài kết nối.
+
+## Bàn giao và triển khai Sepolia
+
+ABI đã xuất từ source hiện tại tại `../frontend/src/contracts/Crowdfunding.json`. Quy ước hàm, dữ liệu và ví dụ ethers ở [contract-interface.md](../docs/contract-interface.md).
+
+Bản V1 trên Sepolia: `0xCe15C87F7D03325D9fcE8190f04Fcbc6a2a366F3`, giao dịch deploy `0x1ecf1eaf7a02824aeac88de495717c5b7b09aef4122b665bd4adc3d90fdc0c0f`. **V1 không có các hàm hash/biên lai mới. Source và ABI hiện tại là V2, chưa deploy.** Thay đổi source không nâng cấp V1; cần deploy mới để dùng chức năng mới, dữ liệu/tiền ở V1 không tự chuyển sang V2. Khi triển khai V2:
+
+1. Chọn **Ethereum Sepolia** trong ví và kiểm tra chain ID **11155111**.
+2. Trong Remix Desktop dùng provider kết nối ví. Nhãn có thể là Browser Extension/Injected Provider tùy phiên bản; làm theo luồng kết nối trình duyệt nếu ứng dụng yêu cầu.
+3. Chọn **Crowdfunding**, Value = **0**, xác nhận deploy bằng ETH thử nghiệm rồi chờ receipt thành công.
+4. Ghi địa chỉ thật, transaction hash, compiler settings và commit source vào `deployments/` theo [mẫu thông tin](deployments/README.md).
+5. Lý Hiền dùng đúng địa chỉ trên Sepolia và ABI cùng phiên bản để nối frontend. Các nút UI hiện vẫn chạy bằng dữ liệu mô phỏng.
+
+Thay đổi source không cập nhật contract đã deploy. Nếu deploy phiên bản mới, bàn giao lại ABI và địa chỉ tương ứng. Không lưu private key hoặc seed phrase vào repository.
 
 ## Tài liệu chính thức
 
