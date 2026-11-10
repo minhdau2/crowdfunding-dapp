@@ -14,7 +14,7 @@
 4. Viết source trong `contracts/`, test trong `tests/` và chạy bằng các plugin Remix tương ứng.
 5. Muốn mở React, chạy npm ci và npm run dev ở `frontend` trong terminal riêng.
 
-Contract V2 có hash tài chính/biên lai và 25 ca test trong repository. V1 đã deploy trên Sepolia; V2 chưa deploy. Frontend hiện chạy mô phỏng; bước tiếp theo là chạy lại test trong Remix Desktop, deploy V2 lên Sepolia và tích hợp ví theo [giao diện contract](contract-interface.md).
+Contract V2 có hash tài chính/biên lai và 25 ca test trong repository. V1 đã deploy trên Sepolia; V2 chưa deploy. Frontend đã bỏ luồng mô phỏng, có khu vực người dùng/admin và đang chờ adapter ví/API theo [bàn giao frontend](frontend-integration.md); bước tiếp theo là chạy lại test trong Remix Desktop, ghi nhận bản deploy V2 trên Sepolia và tích hợp ví theo [giao diện contract](contract-interface.md).
 
 ## Bàn giao theo từng vai trò
 

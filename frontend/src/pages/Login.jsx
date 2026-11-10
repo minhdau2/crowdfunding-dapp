@@ -1,0 +1,12 @@
+import { useApp } from '../lib/useApp'
+import { shortAddress } from '../lib/campaignModel'
+export default function Login() {
+  const app = useApp()
+  return <section className="page-section narrow-page"><p className="eyebrow">TÀI KHOẢN CHUNG TAY</p><h1 className="page-title">Đăng nhập bằng ví</h1><p className="page-description">Một tài khoản để đồng hành cùng dự án bạn tin tưởng và bắt đầu chiến dịch của riêng mình.</p>
+    <div className="login-steps"><section className="content-panel"><span className="step-number">01</span><h2>Kết nối MetaMask</h2><p>Chọn ví và sử dụng mạng Ethereum Sepolia.</p>{app.account ? <p className="wallet-address" title={app.account}>{shortAddress(app.account)} · {app.wrongNetwork ? 'Sai mạng' : 'Sepolia'}</p> : <button className="primary-button" disabled={!app.features.connect || app.busy} onClick={app.connect}>{app.busy ? 'Đang kết nối…' : 'Kết nối MetaMask'}</button>}
+      {!app.features.connect && <p className="help-text">Kết nối ví hiện chưa sẵn sàng. Vui lòng thử lại sau.</p>}{app.wrongNetwork && <button className="secondary-button" disabled={!app.features.switchNetwork || app.busy} onClick={app.switchNetwork}>Chuyển sang Sepolia</button>}</section>
+      <section className="content-panel"><span className="step-number">02</span><h2>Ký để đăng nhập</h2><p>Xác nhận thông điệp đăng nhập trong ví. Thao tác này không chuyển tiền và không tốn phí gas.</p><button className="primary-button" disabled={!app.account || app.wrongNetwork || !app.features.login || app.authenticated || app.busy} onClick={app.login}>{app.authenticated ? 'Đã đăng nhập' : app.busy ? 'Đang chờ ví…' : 'Ký thông điệp đăng nhập'}</button>{!app.features.login && <p className="help-text">Đăng nhập hiện chưa sẵn sàng.</p>}</section></div>
+    {app.authenticated && <div className="success-callout" role="status">Bạn đã đăng nhập.<div className="button-row"><a className="primary-button" href="#/">Khám phá chiến dịch</a><a className="secondary-button" href="#/create">Tạo chiến dịch</a>{(app.isAdmin || app.isReviewer) && <a className="secondary-button" href="#/admin">Quản trị nội dung</a>}</div></div>}
+    <div className="role-cards"><article><h3>Người góp vốn</h3><p>Theo dõi khoản đã góp và yêu cầu hoàn tiền khi chiến dịch không đạt mục tiêu sau hạn chót.</p></article><article><h3>Người tạo chiến dịch</h3><p>Gửi chiến dịch chờ duyệt, gọi vốn sau khi được duyệt và rút khi hết hạn, đủ mục tiêu. Không cần mở thêm tài khoản.</p></article></div>
+  </section>
+}

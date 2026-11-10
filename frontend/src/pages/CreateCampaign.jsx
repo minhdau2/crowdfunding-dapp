@@ -1,73 +1,66 @@
-import { useRef, useState } from 'react'
-import { useDemo } from '../lib/useDemo'
-import { validateCampaign } from '../lib/demoModel'
+import { useEffect, useRef, useState } from 'react'
+import { useApp } from '../lib/useApp'
+import { validateCampaign } from '../lib/campaignModel'
+import WalletGate from '../components/WalletGate'
 
+const initial = { title: '', description: '', goalEth: '', durationDays: '7', category: 'Cộng đồng' }
 export default function CreateCampaign() {
-  const { account, authenticated, wrongNetwork, connect, login, transact, request } = useDemo()
-  const [values, setValues] = useState({ title: '', description: '', goalEth: '', deadlineLocal: '', category: 'Cộng đồng' })
+  const app = useApp()
+  const [values, setValues] = useState(initial)
+  const [file, setFile] = useState(null)
   const [image, setImage] = useState('')
-  const [imageName, setImageName] = useState('')
-  const [reading, setReading] = useState(false)
-  const [imageError, setImageError] = useState('')
   const [error, setError] = useState('')
   const [created, setCreated] = useState(false)
-  const readerRef = useRef(null)
-  const inputRef = useRef(null)
-  const generation = useRef(0)
-
-  function change(event) { setCreated(false); setValues({ ...values, [event.target.name]: event.target.value }) }
-
-  function removeImage() {
-    generation.current += 1
-    readerRef.current?.abort()
-    setReading(false); setImage(''); setImageName(''); setImageError('')
-    if (inputRef.current) inputRef.current.value = ''
+  const [review, setReview] = useState(false)
+  const input = useRef(null)
+  const previewUrl = useRef('')
+  const metadataReady = typeof app.adapter?.uploadImage === 'function' && typeof app.adapter?.saveMetadata === 'function'
+  const canCreate = app.features.create && app.account && app.authenticated && !app.wrongNetwork && !app.busy && !app.request
+  useEffect(() => () => URL.revokeObjectURL(previewUrl.current), [])
+  function selectImage(value) {
+    URL.revokeObjectURL(previewUrl.current)
+    previewUrl.current = value ? URL.createObjectURL(value) : ''
+    setFile(value); setImage(previewUrl.current)
   }
-
-  function chooseImage(event) {
-    const file = event.target.files?.[0]
-    if (!file) return
-    removeImage()
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
-      setImageError('Chọn ảnh JPG, PNG hoặc WebP có dung lượng tối đa 5 MB.'); return
-    }
-    const token = generation.current
-    const reader = new FileReader()
-    readerRef.current = reader
-    setReading(true)
-    reader.onerror = () => { if (token === generation.current) { setReading(false); setImageError('Không đọc được ảnh. Hãy chọn lại.') } }
-    reader.onload = () => {
-      const preview = new Image()
-      preview.onload = () => { if (token === generation.current) { setImage(String(reader.result)); setImageName(file.name); setReading(false) } }
-      preview.onerror = () => { if (token === generation.current) { setImageError('File không phải ảnh hợp lệ hoặc ảnh bị hỏng.'); setReading(false) } }
-      preview.src = String(reader.result)
-    }
-    reader.readAsDataURL(file)
+  function change(event) { setCreated(false); setReview(false); setValues({ ...values, [event.target.name]: event.target.value }) }
+  function payload() {
+    const result = { title: values.title.trim(), description: values.description.trim(), goalEth: values.goalEth,
+      durationDays: values.durationDays, durationSeconds: (BigInt(values.durationDays || '0') * 86400n).toString(), ...(metadataReady ? { category: values.category, imageFile: file } : {}) }
+    validateCampaign(result)
+    return result
   }
-
-  function submit(event) {
-    event.preventDefault()
-    setError('')
+  function preview(event) {
+    event.preventDefault(); setError('')
+    try { payload(); setReview(true) } catch (issue) { setError(issue.message) }
+  }
+  function create() {
     try {
-      const payload = { title: values.title, description: values.description, goalEth: values.goalEth, category: values.category, deadline: `${values.deadlineLocal}:00+07:00`, image }
-      validateCampaign(payload)
-      transact({ type: 'create', values: payload }, 'Tạo chiến dịch', `${payload.title} · Mục tiêu ${payload.goalEth} ETH · Hạn ${values.deadlineLocal.replace('T', ' ')} (giờ Việt Nam). Mục tiêu và thời hạn không thể sửa sau khi tạo.`, () => { setCreated(true); setValues({ title: '', description: '', goalEth: '', deadlineLocal: '', category: 'Cộng đồng' }); removeImage() })
+      const values = payload()
+      app.transact({ type: 'create', values }, 'Gửi chiến dịch chờ duyệt', `${values.title} · Mục tiêu ${values.goalEth} ETH · Gọi vốn ${values.durationDays} ngày kể từ lúc được duyệt. Chưa nhận góp trong thời gian chờ duyệt.`, () => {
+        setCreated(true); setValues(initial); selectImage(null); setReview(false)
+        if (input.current) input.current.value = ''
+      })
     } catch (issue) { setError(issue.message) }
   }
-
-  return <section className="page-section narrow-page"><p className="eyebrow">BẮT ĐẦU MỘT ĐIỀU Ý NGHĨA</p><h1 className="page-title">Tạo chiến dịch</h1><p className="page-description">Chia sẻ ý tưởng và mục tiêu của bạn với cộng đồng.</p>
-    {!account && <div className="inline-callout">Kết nối ví mẫu trước khi tạo chiến dịch. <button className="secondary-button" onClick={connect}>Kết nối ví mẫu</button></div>}
-    {account && !authenticated && <div className="inline-callout">Đăng nhập mẫu để thử luồng tạo chiến dịch và lưu ảnh. <button className="secondary-button" onClick={login}>Ký để đăng nhập (mẫu)</button></div>}
-    {created && <div className="success-callout" role="status">Đã tạo chiến dịch mô phỏng. <a href="#/mine">Xem chiến dịch của tôi →</a></div>}
-    <form className="form-panel" onSubmit={submit}>
+  return <section className="page-section narrow-page"><p className="eyebrow">BẮT ĐẦU MỘT ĐIỀU Ý NGHĨA</p><h1 className="page-title">Tạo chiến dịch</h1><p className="page-description">Gửi đề xuất để được xem xét. Thời gian gọi vốn chỉ bắt đầu sau khi được duyệt.</p>
+    <WalletGate />
+    {!app.features.create && <p className="inline-callout">Gửi chiến dịch chờ duyệt hiện chưa sẵn sàng. Bạn có thể điền và xem lại thông tin; thông tin chưa được lưu hoặc gửi đi.</p>}
+    {created && <div className="success-callout" role="status">Đề xuất đã được ghi nhận, đang chờ duyệt. Chiến dịch chưa nhận góp. <a href="#/mine">Xem chiến dịch của tôi →</a></div>}
+    <form className="form-panel" onSubmit={preview}>
       <label htmlFor="campaign-title">Tên chiến dịch <span>*</span></label><input id="campaign-title" name="title" maxLength={100} required value={values.title} onChange={change} placeholder="Ví dụ: Mang sách đến vùng cao" /><p className="help-text">{values.title.length}/100 ký tự</p>
-      <label htmlFor="campaign-description">Mô tả <span>*</span></label><textarea id="campaign-description" name="description" rows={7} maxLength={5000} required value={values.description} onChange={change} placeholder="Giới thiệu mục đích, người được hỗ trợ và cách bạn dự định sử dụng khoản góp…" /><p className="help-text">{values.description.length}/5.000 ký tự</p>
-      <div className="form-columns"><div><label htmlFor="campaign-goal">Mục tiêu (ETH) <span>*</span></label><input id="campaign-goal" name="goalEth" inputMode="decimal" required value={values.goalEth} onChange={change} placeholder="0.01" /><p className="help-text">Lớn hơn 0. Dùng dấu chấm cho phần thập phân.</p></div><div><label htmlFor="campaign-deadline">Hạn chót (giờ Việt Nam) <span>*</span></label><input id="campaign-deadline" name="deadlineLocal" type="datetime-local" required value={values.deadlineLocal} onChange={change} /><p className="help-text">UTC+7, không phụ thuộc múi giờ máy.</p></div></div>
-      <label htmlFor="campaign-category">Chủ đề</label><select id="campaign-category" name="category" value={values.category} onChange={change}><option>Cộng đồng</option><option>Giáo dục</option><option>Môi trường</option><option>Y tế</option><option>Sáng tạo</option><option>Khác</option></select>
-      <label htmlFor="campaign-image">Ảnh bìa (không bắt buộc)</label><div className="image-upload"><input ref={inputRef} id="campaign-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /><p className="help-text">Một ảnh JPG/PNG/WebP, tối đa 5 MB. Chỉ lưu cục bộ trong bản mô phỏng.</p>{reading && <p role="status">Đang đọc ảnh…</p>}{image && <div className="image-preview"><img src={image} alt="Xem trước ảnh bìa" /><p>{imageName}</p><button type="button" className="secondary-button" onClick={removeImage}>Xóa ảnh</button></div>}{imageError && <p className="field-error" role="alert">{imageError}</p>}</div>
-      <p className="inline-callout">Kiểm tra kỹ trước khi tạo. Mục tiêu và hạn chót sẽ không được sửa sau khi tạo chiến dịch. Chưa đủ mục tiêu khi hết hạn thì người góp yêu cầu hoàn tiền.</p>
+      <label htmlFor="campaign-description">Mô tả <span>*</span></label><textarea id="campaign-description" name="description" rows={7} maxLength={5000} required value={values.description} onChange={change} placeholder="Giới thiệu mục đích, người được hỗ trợ và kế hoạch sử dụng khoản góp…" /><p className="help-text">{values.description.length}/5.000 ký tự</p>
+      <div className="form-columns"><div><label htmlFor="campaign-goal">Mục tiêu (ETH) <span>*</span></label><input id="campaign-goal" name="goalEth" inputMode="decimal" required value={values.goalEth} onChange={change} placeholder="0.01" /><p className="help-text">Lớn hơn 0. Dùng dấu chấm cho phần thập phân.</p></div><div><label htmlFor="campaign-duration">Thời lượng gọi vốn (ngày) <span>*</span></label><input id="campaign-duration" name="durationDays" type="number" min="1" max="90" step="1" required value={values.durationDays} onChange={change} /><p className="help-text">Từ 1 đến 90 ngày, tính từ lúc được duyệt. Chưa xác định hạn chót trong thời gian chờ.</p></div></div>
+      <label htmlFor="campaign-category">Chủ đề</label><select id="campaign-category" name="category" disabled={!metadataReady} value={values.category} onChange={change}>{['Cộng đồng', 'Giáo dục', 'Môi trường', 'Y tế', 'Sáng tạo', 'Khác'].map(item => <option key={item}>{item}</option>)}</select>
+      <label htmlFor="campaign-image">Ảnh bìa (không bắt buộc)</label><div className="image-upload"><input ref={input} id="campaign-image" type="file" disabled={!metadataReady} accept="image/jpeg,image/png,image/webp" onChange={event => {
+        setReview(false); setError(''); const imageFile = event.target.files?.[0]
+        if (!imageFile) { selectImage(null); return }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(imageFile.type) || imageFile.size > 5 * 1024 * 1024) { setError('Chọn ảnh JPG, PNG hoặc WebP tối đa 5 MB.'); event.target.value = ''; selectImage(null); return }
+        selectImage(imageFile)
+      }} /><p className="help-text">{metadataReady ? 'Một ảnh JPG/PNG/WebP, tối đa 5 MB.' : 'Ảnh bìa và chủ đề chưa sẵn sàng để lưu.'}</p>{image && <div className="image-preview"><img src={image} alt="Xem trước ảnh bìa" /><button type="button" className="secondary-button" onClick={() => { selectImage(null); setReview(false); input.current.value = '' }}>Xóa ảnh</button></div>}</div>
+      <p className="inline-callout">Chờ duyệt → bắt đầu gọi vốn → kết thúc. Chưa duyệt hoặc bị từ chối thì không nhận tiền. Khi hết hạn: đủ mục tiêu thì chủ rút, thiếu mục tiêu thì người góp yêu cầu hoàn.</p>
       {error && <p className="field-error" role="alert">{error}</p>}
-      <button className="primary-button" type="submit" disabled={!account || !authenticated || wrongNetwork || reading || !!request}>Xem lại và tạo chiến dịch</button>
+      <button className="secondary-button" type="submit" disabled={app.busy || !!app.request}>Xem lại thông tin</button>
+      {review && <section className="review-panel" aria-label="Xem lại chiến dịch"><h2>Kiểm tra trước khi tạo</h2><dl><dt>Tên chiến dịch</dt><dd>{values.title}</dd><dt>Mục tiêu</dt><dd>{values.goalEth} ETH</dd><dt>Thời lượng</dt><dd>{values.durationDays} ngày kể từ lúc được duyệt</dd><dt>Trạng thái ban đầu</dt><dd>Chờ duyệt · Chưa nhận góp</dd></dl><p className="help-text">Phí gas tính riêng. Gửi đề xuất thành công không đồng nghĩa đã được duyệt. Hạn chót chính thức được ghi khi giao dịch duyệt thành công.</p><button className="primary-button" type="button" disabled={!canCreate} onClick={create}>Gửi chiến dịch chờ duyệt</button>{!canCreate && <p className="help-text">Cần kết nối ví, đăng nhập và chức năng tạo chiến dịch sẵn sàng.</p>}</section>}
     </form>
   </section>
 }

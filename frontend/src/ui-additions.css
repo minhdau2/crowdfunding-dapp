@@ -1,0 +1,39 @@
+.hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 28px 0 16px; }
+.hero-actions .primary-link { margin: 0; }
+.list-actions, .footer-links { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.login-steps, .role-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 24px 0; }
+.login-steps .content-panel { margin: 0; }
+.login-steps h2 { font-size: 23px; margin: 12px 0; }
+.login-steps p { font-size: 14px; }
+.login-steps button { margin-top: 18px; }
+.step-number { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid #ccd7c8; border-radius: 50%; color: #497c54; font-weight: 600; }
+.wallet-address { overflow-wrap: anywhere; padding: 12px; background: #edf4ea; border-radius: 8px; margin-top: 16px; }
+.role-cards article { padding: 22px; background: #eef2e8; border-radius: 12px; }
+.role-cards h3 { margin: 0 0 10px; }
+.role-cards p { font-size: 13px; color: #637368; }
+.review-panel { border-top: 1px solid #dce3d9; margin-top: 26px; padding-top: 24px; }
+.review-panel h2 { font-size: 23px; }
+dl { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; font-size: 14px; }
+dt { color: #637368; }
+dd { margin: 0; overflow-wrap: anywhere; }
+.hash-link { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+.funding { flex-wrap: wrap; overflow-wrap: anywhere; }
+.admin-scope { margin: 24px 0; padding: 20px; border-left: 4px solid #497c54; background: #edf2e9; border-radius: 8px; font-size: 14px; }
+.admin-scope p { margin-top: 6px; }
+.admin-layout { display: grid; grid-template-columns: 215px minmax(0, 1fr); align-items: start; gap: 28px; margin: 32px 0; }
+.admin-nav { display: grid; gap: 8px; padding: 12px; background: #eef2e8; border-radius: 12px; }
+.admin-nav button { padding: 12px; border: 0; border-radius: 8px; background: transparent; color: #245c45; text-align: left; }
+.admin-nav button.selected { background: #245c45; color: #fff; }
+.admin-content { min-width: 0; }
+.admin-content .section-heading { margin-bottom: 24px; align-items: center; }
+.admin-content h2 { font-size: 25px; }
+.moderation-list .content-panel { margin-top: 16px; }
+.moderation-list h3 { margin-top: 0; }
+.favorites-list { margin: 28px 0; }
+.report-form { border-top: 1px solid #dce3d9; margin-top: 20px; padding-top: 18px; font-size: 13px; }
+.report-form summary { cursor: pointer; }
+.pending { color: #76511d; background: #fff1d4; }
+.rejected { color: #9d392c; background: #fbe9e5; }
+input:disabled, select:disabled, textarea:disabled { background: #edf0e9; cursor: not-allowed; color: #637368; }
+@media (max-width: 760px) { .admin-layout { grid-template-columns: 1fr; } .admin-nav { display: flex; flex-wrap: wrap; } }
+@media (max-width: 620px) { .login-steps, .role-cards { grid-template-columns: 1fr; } .list-actions { width: 100%; } dl { grid-template-columns: 1fr; gap: 4px; } dd { margin-bottom: 10px; } .hero-actions { align-items: stretch; flex-direction: column; } .hero-actions a { justify-content: center; } }
