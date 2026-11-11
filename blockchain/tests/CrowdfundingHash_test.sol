@@ -20,13 +20,13 @@ contract CrowdfundingHashTest is CrowdfundingTestBase {
         uint256 id = _create(100);
         Crowdfunding.Campaign memory campaign = funding.getCampaign(id);
         bytes32 expected = keccak256(abi.encode(
-            funding.CAMPAIGN_HASH_DOMAIN(), funding.HASH_VERSION(), block.chainid,
-            address(funding), id, campaign.owner, campaign.goal, campaign.deadline
+            funding.PROPOSAL_HASH_DOMAIN(), funding.HASH_VERSION(), block.chainid,
+            address(funding), id, campaign.owner, campaign.goal, campaign.durationSeconds
         ));
         Assert.equal(uint256(funding.campaignHash(id)), uint256(expected), "Financial hash matches schema");
         bytes32 wrongGoal = keccak256(abi.encode(
-            funding.CAMPAIGN_HASH_DOMAIN(), funding.HASH_VERSION(), block.chainid,
-            address(funding), id, campaign.owner, campaign.goal + 1, campaign.deadline
+            funding.PROPOSAL_HASH_DOMAIN(), funding.HASH_VERSION(), block.chainid,
+            address(funding), id, campaign.owner, campaign.goal + 1, campaign.durationSeconds
         ));
         Assert.ok(expected != wrongGoal, "Changing goal by one wei invalidates hash");
     }
@@ -83,7 +83,8 @@ contract CrowdfundingHashTest is CrowdfundingTestBase {
     /// #value: 100
     function failedPaymentRollsBackReceipt() public payable {
         FundingActor owner = new FundingActor();
-        uint256 id = owner.create(funding, 100, block.timestamp + 1 days);
+        uint256 id = owner.create(funding, 100, 1 days);
+        funding.approveCampaign(id);
         funding.contribute{value: 100}(id);
         funding.setDeadlineForTest(id, block.timestamp);
         owner.setRejectEther(true);

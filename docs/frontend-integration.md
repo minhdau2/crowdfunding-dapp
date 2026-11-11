@@ -4,7 +4,7 @@ Kim Ba phụ trách giao diện; Lý Hiền triển khai adapter trong `frontend
 
 ## Cập nhật luồng duyệt chiến dịch
 
-Nhóm chọn duyệt on-chain trước khi nhận góp. Yêu cầu contract dành cho Nhật Minh ở [nhat-minh-campaign-approval.md](nhat-minh-campaign-approval.md). Đây là giao diện chuẩn bị cho contract tương lai, không xác nhận source/ABI/backend hiện có đã hỗ trợ.
+Nhóm chọn duyệt on-chain trước khi nhận góp. Yêu cầu contract dành cho Nhật Minh ở [nhat-minh-campaign-approval.md](nhat-minh-campaign-approval.md). Contract V3 và ABI CrowdfundingV3.json đã có theo [bàn giao Lý Hiền](ly-hien-contract-handoff.md), 49 test Solidity đạt; chưa deploy. Backend/adapter hiện vẫn chưa tích hợp luồng này.
 
 Adapter chỉ khai báo `campaignWorkflow: 'review-v1'` sau khi kiểm chứng đúng địa chỉ/ABI và các hàm duyệt của contract mới. Các capability create/approve/reject/loadPendingCampaigns bị khóa nếu thiếu khai báo này; runConfirmedOperation cũng chặn create/approve/reject để tránh truyền thời lượng vào deadline của contract cũ.
 
@@ -12,12 +12,12 @@ Session bổ sung `isReviewer: boolean`, lấy từ quyền thật trên contrac
 
 Record mới thêm `approvalStatus: 'pending' | 'approved' | 'rejected'`, `durationSeconds: string`, `approvedAtSeconds: string`, `rejectionReason?: string`. Pending/Rejected có deadlineSeconds và approvedAtSeconds bằng '0', không có khoản góp/hoàn/rút. Rejected có lý do công khai đọc/đối chiếu từ blockchain. Approved có approvedAtSeconds > 0 và deadlineSeconds = approvedAtSeconds + durationSeconds. Snapshot vẫn phải được adapter xác minh ở cùng block. Record cũ thiếu approvalStatus được đánh dấu legacy, giữ quy tắc cũ; không coi nó là Pending hoặc tự áp quy tắc duyệt mới cho địa chỉ cũ.
 
-Trang khám phá chỉ hiển thị chiến dịch approved (gồm đang gọi vốn và đã kết thúc). Chủ thấy pending/rejected trong Chiến dịch của tôi, có bộ lọc và lý do từ chối. Pending không bị hiểu thành thất bại để hoàn tiền. Giao diện nhập thời lượng nguyên 1–90 ngày, mặc định 7; cần Nhật Minh xác nhận giới hạn contract trước khi mở tích hợp.
+Trang khám phá chỉ hiển thị chiến dịch approved (gồm đang gọi vốn và đã kết thúc). Chủ thấy pending/rejected trong Chiến dịch của tôi, có bộ lọc và lý do từ chối. Pending không bị hiểu thành thất bại để hoàn tiền. Giao diện nhập thời lượng nguyên 1–90 ngày, mặc định 7; giới hạn này đã được chốt trong contract V3 (nguyên ngày 1–90).
 
 Khi có account, loadCampaigns phải bao gồm các pending/rejected của chính account bên cạnh danh sách chiến dịch công khai; UI tự tách chúng khỏi trang khám phá. Không chỉ trả các chiến dịch approved rồi làm mất đề xuất trong mục của chủ.
 
 - `loadPendingCampaigns({account})` trả `{campaigns: record[], hasMore?: boolean}`, chỉ có pending thuộc contract duyệt. Backend/RPC/adapter phải kiểm quyền và tải toàn bộ danh sách phù hợp; không giả định 20 bản ghi MongoDB là toàn bộ.
-- `approve({type:'approve',account,id})` và `reject({type:'reject',account,id,reason})` trả TransactionResponse có hash/wait(). reason 10–1000 ký tự theo UI, cần khớp giới hạn contract. Không cập nhật MongoDB để giả lập kết quả duyệt.
+- `approve({type:'approve',account,id})` và `reject({type:'reject',account,id,reason})` trả TransactionResponse có hash/wait(). reason 10–1000 UTF-16 code units theo UI; contract kiểm 10–3000 byte UTF-8 và không chỉ khoảng trắng ASCII, xem contract-interface.md. Không cập nhật MongoDB để giả lập kết quả duyệt.
 - Admin có mục Duyệt chiến dịch riêng. Mọi quyết định đều qua transaction dialog và receipt; afterTransaction đồng bộ rồi refresh. Các thao tác nội dung vẫn đi qua moderate/API riêng.
 
 ## Nguyên tắc
@@ -75,7 +75,7 @@ withdraw({ type: 'withdraw', account, id })
 refund({ type: 'refund', account, id })
 ```
 
-Gọi parseEther cho số ETH. create map sang hàm gửi đề xuất của contract mới với durationSeconds. Không tự tính hoặc gửi deadline từ đồng hồ máy; deadline chính thức lấy sau giao dịch duyệt. Không dùng Number tính wei. Không gọi create lần hai khi đồng bộ metadata lỗi.
+Gọi parseEther cho số ETH. create map sang submitCampaign của V3 với durationSeconds, lấy ID từ CampaignSubmitted; approve/reject map sang approveCampaign/rejectCampaign. Không tự tính hoặc gửi deadline từ đồng hồ máy; deadline chính thức lấy sau giao dịch duyệt. Không dùng Number tính wei. Không gọi create lần hai khi đồng bộ metadata lỗi.
 
 Giao diện chờ `wait()` có receipt status 1 và hash hợp lệ rồi mới báo thành công, xử lý transaction replacement thành công, giữ mã giao dịch nếu RPC lỗi. Adapter/wallet xử lý mất kết nối và không cho một lần click gửi nhiều giao dịch.
 

@@ -1,163 +1,159 @@
-# Giao diện Crowdfunding cho frontend
+# Giao diện contract V3 cho Lý Hiền
 
-Source: `blockchain/contracts/Crowdfunding.sol`. ABI: `frontend/src/contracts/Crowdfunding.json`, là **mảng JSON** trực tiếp, không có lớp bọc `{ abi: ... }`. Mạng dự kiến: **Ethereum Sepolia, chain ID 11155111**. Source/ABI hiện tại là V2 bổ sung hash/biên lai, chưa deploy. V1 tại `0xCe15C87F7D03325D9fcE8190f04Fcbc6a2a366F3` không có các hàm mới; các hàm nghiệp vụ và thứ tự tuple vẫn giữ nguyên. Chỉ dùng địa chỉ V2 lấy từ receipt deploy thật khi tích hợp hash.
+Source chính: `blockchain/contracts/Crowdfunding.sol`. ABI là mảng JSON tại `frontend/src/contracts/CrowdfundingV3.json`. Contract V3 dùng workflow `review-v1`, HASH_VERSION = 2, cần deploy mới lên Ethereum Sepolia (11155111). Chưa có địa chỉ V3 được bàn giao; không dùng địa chỉ cũ để thử các hàm mới.
 
-## Hàm ghi dữ liệu
+## Thay đổi bắt buộc so với V1/V2
 
-| Hàm | Tham số | Ai gọi và điều kiện |
-| --- | --- | --- |
-| `createCampaign(string title, string description, uint256 goal, uint256 deadline)` | `goal` wei; `deadline` giây Unix | Bất kỳ ví; goal > 0, deadline > block.timestamp. Người gọi thành chủ. Trả ID, phát `CampaignCreated` |
-| `contribute(uint256 id)` payable | Gửi tiền trong `{ value: amountWei }` | Ví bất kỳ, kể cả chủ; value > 0, timestamp < deadline; góp lặp và vượt mục tiêu được phép |
-| `withdraw(uint256 id)` | Value phải bằng 0 | Chủ chiến dịch, timestamp >= deadline, totalRaised >= goal, chưa rút; nhận toàn bộ totalRaised một lần |
-| `refund(uint256 id)` | Value phải bằng 0 | Ví đã góp, timestamp >= deadline, totalRaised < goal, chưa hoàn; nhận toàn bộ khoản ví đã góp một lần |
+- Constructor mới: `Crowdfunding(address initialReviewer)`, bắt buộc ví khác địa chỉ 0. Người deploy không tự có quyền nếu initialReviewer là ví khác.
+- Bỏ `createCampaign` và `CampaignCreated`. Dùng `submitCampaign` và lấy ID từ `CampaignSubmitted` trong receipt thành công. Không truyền duration vào deadline của hàm cũ.
+- Đề xuất Pending chưa nhận tiền, deadline/approvedAt = 0. Approved mới nhận góp; deadline cố định một lần khi duyệt. Rejected không phải chiến dịch thiếu vốn cần hoàn.
+- Giữ 8 trường đầu của tuple getCampaign, nối thêm các trường duyệt. Dùng ABI V3 để giải mã đủ tuple, không ghép tay ABI cũ/mới.
+- `campaignHash` trong V3 là alias của proposalHash, có schema khác V2. Thêm decisionHash/approvalHash. Hash schema version tăng từ 1 lên 2, kể cả biên lai. Không so hash V3 bằng công thức V2.
 
-Tên và mô tả không rỗng; tối đa **300/15000 byte UTF-8** tương ứng. Giới hạn hiện có của UI 100/5000 UTF-16 code units nằm trong giới hạn này. UI cần trim khoảng trắng; contract chỉ kiểm tra độ dài byte. Không gửi ảnh hoặc dữ liệu riêng tư vào hai trường này.
+## Cấu hình và phạm vi quyền
 
-Không có admin, phí nền tảng, sửa chiến dịch, hủy chiến dịch, hoặc chuyển quyền chủ. Người góp không được rút lại tiền khi chiến dịch còn chạy hoặc đã thành công. Hoàn tiền cần người góp chủ động ký giao dịch, không tự chạy khi hết hạn.
+Compiler 0.8.34+commit.80d5c536, EVM cancun, optimizer enabled 200 runs, Via IR tắt. CONTRACT_VERSION = 3, CAMPAIGN_WORKFLOW = review-v1. Reviewer được duyệt hoặc từ chối Pending; không được sửa điều khoản, hủy chiến dịch Approved hoặc rút thay chủ. Một ví có thể vừa là reviewer vừa là chủ chiến dịch và tự duyệt; không có cơ chế bắt buộc người duyệt độc lập.
 
-## Hàm đọc và thứ tự dữ liệu
-
-`campaignCount()` là tổng số chiến dịch. ID bắt đầu từ **1**, không tái sử dụng và không xóa chiến dịch. Đọc từng ID qua `getCampaign(id)`, tải theo trang ở frontend nếu danh sách lớn; contract không có hàm trả toàn bộ danh sách hoặc toàn bộ người góp.
-
-`getCampaign(id)` trả tuple theo đúng thứ tự:
-
-| Vị trí | Tên | Solidity | Ý nghĩa |
-| --- | --- | --- | --- |
-| 0 | `owner` | address | Ví chủ chiến dịch |
-| 1 | `title` | string | Tên công khai |
-| 2 | `description` | string | Mô tả công khai |
-| 3 | `goal` | uint256 | Mục tiêu, wei |
-| 4 | `deadline` | uint256 | Hạn chót, giây Unix |
-| 5 | `totalRaised` | uint256 | Tổng đã góp trong lịch sử, wei; không giảm sau rút/hoàn |
-| 6 | `totalRefunded` | uint256 | Tổng đã hoàn thành công, wei |
-| 7 | `withdrawn` | bool | Đã rút thành công hay chưa |
-
-| Hàm | Kết quả |
+| Hàm quản lý reviewer | Điều kiện |
 | --- | --- |
-| `getCampaignStatus(id)` | `0 = Active` → UI `active`; `1 = Successful` → `successful`; `2 = Unsuccessful` → `unsuccessful` |
-| `contributions(id, wallet)` | Tổng lịch sử ví đã góp, wei, không giảm sau hoàn |
-| `refunded(id, wallet)` | Ví đã nhận hoàn hay chưa |
-| `getRefundableAmount(id, wallet)` | Khoản hiện được phép hoàn; bằng 0 nếu chưa đến hạn, thành công, đã hoàn hoặc chưa góp |
-| `getAvailableFunds(id)` | Tiền còn hạch toán cho riêng chiến dịch: 0 khi đã rút, còn lại totalRaised - totalRefunded |
-| `MAX_TITLE_BYTES()` / `MAX_DESCRIPTION_BYTES()` | 300 / 15000 |
-| `campaignHash(id)` | Hash tài chính cố định; ID sai revert `CampaignNotFound` |
-| `receiptCount()` | Tổng số biên lai góp/rút/hoàn thành công, ID toàn cục bắt đầu từ 1 |
-| `receiptHash(receiptId)` | Hash biên lai; ID sai revert `ReceiptNotFound` |
-| `HASH_VERSION()` | 1 (phiên bản schema hash, không phải số phiên bản deploy) |
-| `CAMPAIGN_HASH_DOMAIN()` / `RECEIPT_HASH_DOMAIN()` | bytes32 domain theo schema bên dưới |
+| `reviewer()` / `pendingReviewer()` | Ví đang có quyền / ví đang được đề nghị chuyển quyền |
+| `isReviewer(address)` | Kiểm tra ví có quyền duyệt hiện tại |
+| `proposeReviewer(address next)` | Chỉ reviewer hiện tại; next khác 0 và khác ví hiện tại. Có thể thay đề nghị cũ |
+| `acceptReviewer()` | Chỉ pendingReviewer; chuyển quyền, xóa đề nghị, thu hồi quyền reviewer cũ |
+| `cancelReviewerTransfer()` | Chỉ reviewer hiện tại; hủy đề nghị chưa nhận |
 
-Đang còn hạn luôn là `Active` dù đã đủ tiền. `Successful`/`Unsuccessful` là kết quả gọi vốn sau hạn, không đổi khi rút/hoàn xong. Hiển thị trạng thái thanh toán từ `withdrawn`/`refunded` riêng. `getAvailableFunds` khác số tiền có thể rút: muốn rút còn phải đúng chủ, hết hạn và đủ mục tiêu. ETH bị ép chuyển vào contract không thuộc chiến dịch nào.
+Không có renounce hoặc quyền thu hồi tiền admin. Nếu mất khóa reviewer trước khi chuyển quyền, không có cơ chế khôi phục trong contract; chiến dịch đã Approved vẫn góp/rút/hoàn bình thường, đề xuất Pending chờ người duyệt. isAdmin trên backend và isReviewer on-chain là hai quyền riêng.
 
-## Schema hash tài chính và biên lai
+## Hàm nghiệp vụ
 
-Contract tự tính hash từ dữ liệu thật. Không truyền hash từ MongoDB/frontend vào contract. Mọi trường vẫn công khai; hash phục vụ đối chiếu tính toàn vẹn, không phải mã hóa.
+| Hàm | Đơn vị và điều kiện |
+| --- | --- |
+| `submitCampaign(string title,string description,uint256 goal,uint256 durationSeconds)` | Không payable. goal > 0 wei; duration là **nguyên ngày từ 1 đến 90 ngày**: 86400–7776000 giây và chia hết 86400. Người gọi thành chủ, trả ID, trạng thái Pending |
+| `approveCampaign(uint256 id)` | Chỉ reviewer; chỉ Pending. approvedAt = decidedAt = block.timestamp, deadline = approvedAt + durationSeconds, decidedBy = msg.sender |
+| `rejectCampaign(uint256 id,string reason)` | Chỉ reviewer, chỉ Pending. Lý do công khai 10–3000 byte UTF-8, không chỉ gồm byte khoảng trắng/control ASCII. Ghi decidedBy/decidedAt; deadline/approvedAt giữ 0 |
+| `contribute(uint256 id)` payable | Chỉ Approved, timestamp < deadline, msg.value > 0. Cho phép góp nhiều lần, vượt mục tiêu và chủ tự góp |
+| `withdraw(uint256 id)` | Chỉ Approved, đúng chủ, timestamp >= deadline, totalRaised >= goal, chưa rút. Trả toàn bộ tổng đã góp một lần, kể cả vượt mục tiêu |
+| `refund(uint256 id)` | Chỉ Approved, timestamp >= deadline, totalRaised < goal, ví có góp và chưa hoàn. Hoàn toàn bộ khoản lịch sử của ví một lần |
 
-Hai schema đều dùng `keccak256(abi.encode(...))` theo đúng thứ tự và kiểu:
+Tên/mô tả không rỗng, tối đa 300/15000 byte UTF-8. UI trim và dùng giới hạn 100/5000 UTF-16 code units. Lý do ở UI yêu cầu 10–1000 UTF-16 code units; contract kiểm tra byte để tiết kiệm mã và hỗ trợ UTF-8, hai giới hạn độ dài không đồng nhất. Backend/frontend vẫn trim/kiểm tra input; contract không xác thực nội dung hoặc tính đúng sự thật của dự án.
+
+Không có hàm sửa title/description/goal/duration/deadline, thu phí, hủy Approved hoặc tự động hoàn tiền theo đồng hồ. Muốn gửi lại đề xuất Rejected thì submit mới, ID mới. Tiền/ID giữ bigint hoặc chuỗi; không đổi wei sang Number.
+
+## Tuple và trạng thái
+
+`getCampaign(id)` trả theo thứ tự:
+
+| Index | Tên | Kiểu và ý nghĩa |
+| --- | --- | --- |
+| 0 | owner | address payable, ví chủ |
+| 1 | title | string công khai, bất biến |
+| 2 | description | string công khai, bất biến |
+| 3 | goal | uint256 wei |
+| 4 | deadline | uint256 Unix seconds; 0 nếu chưa được duyệt |
+| 5 | totalRaised | uint256, tổng lịch sử đã góp, không giảm sau rút/hoàn |
+| 6 | totalRefunded | uint256, tổng đã hoàn thành công |
+| 7 | withdrawn | bool |
+| 8 | durationSeconds | uint256, thời lượng nguyên ngày đã chốt lúc submit |
+| 9 | submittedAt | uint256, thời điểm gửi đề xuất |
+| 10 | approvedAt | uint256, thời điểm duyệt, hoặc 0 |
+| 11 | approvalStatus | uint8: 0 Pending, 1 Approved, 2 Rejected |
+| 12 | rejectionReason | string, rỗng nếu chưa bị từ chối |
+| 13 | decidedBy | address reviewer đã quyết định; 0 nếu Pending |
+| 14 | decidedAt | uint256 thời điểm quyết định; 0 nếu Pending |
+
+`getCampaignStatus(id)` có enum riêng: **0 Active, 1 Successful, 2 Unsuccessful, 3 Pending, 4 Rejected**. Không dùng giá trị enum approvalStatus để giải mã CampaignStatus. Approved còn hạn luôn Active dù đã đạt mục tiêu. Kết quả Successful/Unsuccessful không đổi sau khi rút/hoàn; đọc các cờ thanh toán riêng.
+
+| Getter | Kết quả |
+| --- | --- |
+| `campaignCount()` | Tổng đề xuất, gồm Pending/Approved/Rejected; ID từ 1, không tái sử dụng |
+| `contributions(id,wallet)` | Tổng lịch sử ví đã góp, không xóa sau hoàn |
+| `refunded(id,wallet)` | Đã hoàn hay chưa |
+| `getRefundableAmount(id,wallet)` | 0 nếu chưa đủ điều kiện, Pending hoặc Rejected |
+| `getAvailableFunds(id)` | 0 nếu Pending/Rejected/đã rút; còn lại totalRaised - totalRefunded. Không có nghĩa ví hiện tại được rút |
+| `proposalHash(id)` / `campaignHash(id)` | Cùng commitment đề xuất bất biến |
+| `decisionHash(id)` | Commitment duyệt/từ chối, hoặc bytes32(0) khi Pending |
+| `approvalHash(id)` | Bằng decisionHash chỉ khi Approved; 0 khi Pending/Rejected |
+| `receiptCount()` / `receiptHash(receiptId)` | Biên lai thanh toán toàn cục, ID từ 1; ID không tồn tại revert |
+
+Contract không có getter trả toàn bộ danh sách. Adapter đọc campaignCount rồi tải theo lô/phân trang hoặc dùng indexer có kiểm chứng. Một campaign ID chỉ có ý nghĩa cùng chainId và contractAddress; không gộp dữ liệu deploy cũ/mới. Không dùng balance toàn contract làm tiền từng chiến dịch; ETH ép chuyển vào không được hạch toán cho bất kỳ chiến dịch nào.
+
+## Event
+
+| Event | Trường |
+| --- | --- |
+| `CampaignSubmitted` | id indexed, owner indexed, title, goal, durationSeconds |
+| `CampaignApproved` | id indexed, reviewer indexed, approvedAt, deadline |
+| `CampaignRejected` | id indexed, reviewer indexed, reason, decidedAt |
+| `ProposalHashRecorded` | campaignId indexed, digest |
+| `DecisionHashRecorded` | campaignId indexed, status uint8, digest |
+| `ContributionReceived` | id indexed, contributor indexed, amount, totalRaised |
+| `FundsWithdrawn` / `RefundClaimed` | id indexed, owner/contributor indexed, amount |
+| `PaymentReceipt` | receiptId indexed, campaignId indexed, account indexed, kind uint8, amountWei, digest |
+| `ReviewerTransferStarted` | previousReviewer indexed, proposedReviewer indexed |
+| `ReviewerTransferCancelled` | reviewer indexed, cancelledReviewer indexed |
+| `ReviewerTransferred` | previousReviewer indexed, newReviewer indexed |
+
+Filter log theo đúng địa chỉ contract trước khi parse event. Submit/duyệt/từ chối không làm tăng receiptCount: biên lai riêng chỉ cho góp/rút/hoàn. Giao dịch revert thì toàn bộ state, event và bộ đếm của giao dịch đó hoàn tác.
+
+## Hash schema V3
+
+Tất cả dùng **keccak256(abi.encode(...))**, không encodePacked. HASH_VERSION = uint256(2). Domain là keccak256 của chuỗi UTF-8 ghi dưới đây. Các ví và số tiền lấy từ msg.sender/msg.value hoặc quyền thanh toán thực trong contract, không từ MongoDB.
 
 | Hash | Kiểu ABI theo thứ tự | Giá trị theo thứ tự |
 | --- | --- | --- |
-| Chiến dịch | `bytes32,uint256,uint256,address,uint256,address,uint256,uint256` | `keccak256("CHUNG_TAY_CAMPAIGN"), 1, chainId, contractAddress, campaignId, owner, goalWei, deadlineSeconds` |
-| Biên lai | `bytes32,uint256,uint256,address,uint256,uint8,uint256,address,uint256` | `keccak256("CHUNG_TAY_RECEIPT"), 1, chainId, contractAddress, receiptId, kind, campaignId, account, amountWei` |
+| Proposal | bytes32,uint256,uint256,address,uint256,address,uint256,uint256 | keccak256("CHUNG_TAY_PROPOSAL"), 2, chainId, contractAddress, campaignId, owner, goalWei, durationSeconds |
+| Decision | bytes32,uint256,uint256,address,uint256,bytes32,uint8,address,uint256,uint256,uint256,bytes32 | keccak256("CHUNG_TAY_DECISION"), 2, chainId, contractAddress, campaignId, proposalHash, approvalStatus, decidedBy, decidedAt, approvedAt, deadlineSeconds, keccak256(bytes(rejectionReason)) |
+| Payment | bytes32,uint256,uint256,address,uint256,uint8,uint256,address,uint256 | keccak256("CHUNG_TAY_RECEIPT"), 2, chainId, contractAddress, receiptId, kind, campaignId, account, amountWei |
 
-Domain là `keccak256` của chuỗi UTF-8 tương ứng. `kind`: **0 = góp**, **1 = rút**, **2 = hoàn**. `account` là `msg.sender` thật; `amountWei` là `msg.value` khi góp, tổng được rút khi rút, hoặc khoản ví được hoàn khi hoàn. Receipt ID tăng chung cho toàn contract, gồm mọi chiến dịch và cả ba loại thao tác.
+Decision status chỉ là 1 Approved hoặc 2 Rejected. Approved dùng reason rỗng (hash chuỗi rỗng, không phải bytes32(0)); Rejected dùng approvedAt/deadline = 0. Payment kind: 0 góp, 1 rút, 2 hoàn. Proposal không bị ghi đè lúc duyệt/từ chối; Decision gắn thêm mốc thời gian và reviewer thực tế. Sau chuyển reviewer, decidedBy cũ vẫn là lịch sử hợp lệ.
 
-Ví dụ tính lại bằng ethers v6, dùng chain ID/địa chỉ từ cấu hình đã kiểm tra mạng và code deploy:
+`frontend/src/contracts/financialHashes.js` cung cấp proposalDigest, decisionDigest, receiptDigest đã đối chiếu bytecode production trong simulator. Đây là **hàm mã hóa thuần**, không tự gọi RPC, không chứng minh MongoDB đúng và không tự bật các nút UI. Lý Hiền đọc dữ liệu/hash tại cùng blockTag từ đúng địa chỉ/mạng, tính lại rồi so sánh. Khi không xác minh được thì báo lỗi; không lấy một hash trong MongoDB làm nguồn chuẩn để kiểm chính dữ liệu MongoDB.
 
-```js
-import { AbiCoder, id, keccak256 } from 'ethers'
+Hash không mã hóa dữ liệu công khai và không chốt các tổng tiền biến động. totalRaised, totalRefunded, contributions và trạng thái thanh toán phải đọc trực tiếp on-chain cùng block, hoặc kiểm chứng bằng event đã xác nhận. Ghi tx hash/log index/block hash để xử lý xác nhận và reorg; receipt mined chưa đồng nghĩa finalized.
 
-const coder = AbiCoder.defaultAbiCoder()
-const coreDigest = keccak256(coder.encode(
-  ['bytes32', 'uint256', 'uint256', 'address', 'uint256', 'address', 'uint256', 'uint256'],
-  [id('CHUNG_TAY_CAMPAIGN'), 1n, chainId, contractAddress,
-    campaignId, campaign.owner, campaign.goal, campaign.deadline],
-))
-const paymentDigest = keccak256(coder.encode(
-  ['bytes32', 'uint256', 'uint256', 'address', 'uint256', 'uint8', 'uint256', 'address', 'uint256'],
-  [id('CHUNG_TAY_RECEIPT'), 1n, chainId, contractAddress,
-    payment.receiptId, payment.kind, payment.campaignId, payment.account, payment.amountWei],
-))
-// So sánh với campaignHash(campaignId) / receiptHash(payment.receiptId)
-// đọc trực tiếp từ đúng contract, cùng blockTag khi kiểm tra một snapshot.
-```
+## Lỗi cần hiển thị
 
-Khi góp tiền, hash chiến dịch giữ nguyên vì nó chỉ chốt các điều khoản cố định. Tổng đã góp/đã hoàn, số góp từng ví và trạng thái thanh toán thay đổi sau các giao dịch hợp lệ; muốn kiểm tra chúng, đọc trực tiếp các getter tại cùng một block, hoặc đối chiếu các event đã xác nhận. Không dùng hash cố định này để xác minh tổng tiền hiện tại.
+| Nhóm | Custom errors |
+| --- | --- |
+| Reviewer | InvalidReviewer, NotReviewer(caller), NotPendingReviewer(caller) |
+| Duyệt | CampaignNotPending(id), CampaignNotApproved(id), InvalidRejectionReason |
+| Input | EmptyTitle, EmptyDescription, TitleTooLong, DescriptionTooLong, InvalidGoal, InvalidDuration |
+| ID | CampaignNotFound(id), ReceiptNotFound(receiptId) |
+| Góp/thời gian | ZeroContribution, CampaignClosed(id), CampaignStillActive(id) |
+| Rút | NotCampaignOwner(id,caller), GoalNotReached(id), AlreadyWithdrawn(id) |
+| Hoàn | GoalAlreadyReached(id), NoContribution(id,wallet), AlreadyRefunded(id,wallet) |
+| ETH/bảo vệ | TransferFailed, ReentrantCall, DirectTransfersDisabled |
 
-Giao dịch revert thì cả receipt ID, hash, event và trạng thái tài chính đều hoàn tác. Lấy biên lai từ `PaymentReceipt` trong receipt thành công; lọc đúng địa chỉ contract. Khóa định danh ngoài chain phải gồm `chainId + contractAddress + receiptId`; giữ thêm transaction hash, log index, block number và block hash để theo dõi xác nhận/reorg. Không nhận một hash lưu trong MongoDB làm nguồn chuẩn cho việc đối chiếu chính MongoDB đó.
+Từ chối ký, thiếu gas, mất mạng là lỗi ví/provider. Không báo thành công trước receipt status 1. Nếu receipt thành công nhưng sync MongoDB lỗi, báo đã thực hiện nhưng chưa đồng bộ; không đề nghị gửi lại giao dịch thanh toán.
 
-Phần thay đổi này chỉ thêm contract/ABI và kiểm thử. Backend/frontend hiện chưa tự kiểm tra hash hoặc ngăn hiển thị dữ liệu MongoDB bị sửa. Bước tích hợp tiếp theo cần tính lại hash từ dữ liệu cần kiểm tra, so với hash đọc trực tiếp on-chain, đọc các tổng/trạng thái cùng block và xử lý khi RPC không xác minh được. Tên/mô tả vẫn bất biến ở contract hiện tại; chưa có API sửa metadata có chữ ký ví.
-
-## Ví dụ ethers v6 khi triển khai thật
+## Ví dụ tích hợp tối thiểu
 
 ```js
-import { BrowserProvider, Contract, formatEther, parseEther } from 'ethers'
-import abi from './contracts/Crowdfunding.json'
-
-// contractAddress phải là địa chỉ deploy thật trên Sepolia.
+import { BrowserProvider, Contract, parseEther } from 'ethers'
+import abi from './contracts/CrowdfundingV3.json'
 const provider = new BrowserProvider(window.ethereum)
 await provider.send('eth_requestAccounts', [])
-if ((await provider.getNetwork()).chainId !== 11155111n) {
-  throw new Error('Hãy chuyển ví sang Ethereum Sepolia.')
-}
+if ((await provider.getNetwork()).chainId !== 11155111n) throw new Error('Chọn Ethereum Sepolia')
+if (await provider.getCode(contractAddress) === '0x') throw new Error('Không có contract')
 const signer = await provider.getSigner()
 const contract = new Contract(contractAddress, abi, signer)
-
-const deadline = BigInt(Math.floor(new Date(values.deadline).getTime() / 1000))
-const tx = await contract.createCampaign(
-  values.title.trim(), values.description.trim(), parseEther(values.goalEth), deadline,
-)
+if (await contract.CONTRACT_VERSION() !== 3n || await contract.CAMPAIGN_WORKFLOW() !== 'review-v1') {
+  throw new Error('Sai phiên bản contract')
+}
+const tx = await contract.submitCampaign(title.trim(), description.trim(), parseEther(goalEth), BigInt(durationDays) * 86400n)
 const receipt = await tx.wait()
-// Với giao dịch ghi, tx không phải giá trị trả về Solidity.
-// Đọc ID mới từ event đã xác nhận, tránh đoán campaignCount khi nhiều người cùng tạo.
-let createdId
+let campaignId
 for (const log of receipt.logs) {
   if (log.address.toLowerCase() !== contractAddress.toLowerCase()) continue
   try {
     const event = contract.interface.parseLog(log)
-    if (event?.name === 'CampaignCreated') createdId = event.args.id
-  } catch { /* Log không thuộc ABI này. */ }
+    if (event?.name === 'CampaignSubmitted') campaignId = event.args.id
+  } catch { /* unrelated log */ }
 }
-if (createdId === undefined) throw new Error('Không tìm thấy event tạo chiến dịch.')
-
-const c = await contract.getCampaign(createdId)
-const uiCampaign = {
-  id: createdId.toString(), // Giữ chuỗi để không mất độ chính xác ID lớn.
-  owner: c.owner, title: c.title, description: c.description,
-  goalEth: formatEther(c.goal), totalRaisedEth: formatEther(c.totalRaised),
-  totalRefundedEth: formatEther(c.totalRefunded),
-  deadline: new Date(Number(c.deadline) * 1000).toISOString(),
-  withdrawn: c.withdrawn,
-}
-
-await (await contract.contribute(createdId, { value: parseEther('0.001') })).wait()
-// Các lệnh riêng, gọi khi đủ điều kiện rồi tải lại dữ liệu:
-// await (await contract.withdraw(createdId)).wait()
-// await (await contract.refund(createdId)).wait()
+if (campaignId === undefined) throw new Error('Giao dịch đã mined; kiểm tra event trước khi gửi lại')
+// Dành cho ví có quyền reviewer, chờ receipt và tải lại:
+// await (await contract.approveCampaign(campaignId)).wait()
+// await (await contract.rejectCampaign(campaignId, reason)).wait()
 ```
 
-Đoạn code trên minh họa lớp tích hợp, chưa được gắn vào UI hiện tại. Kiểm tra input ngày hợp lệ trước khi đổi sang BigInt; chỉ hỗ trợ ngày lịch trong phạm vi Date của frontend. So sánh tiền bằng bigint, ví dụ `c.totalRaised >= c.goal`; không đổi wei sang Number. Khi ánh xạ dữ liệu hiện có, thống nhất ID kiểu string và chuẩn hóa địa chỉ trước khi so sánh. Dữ liệu demo hiện dùng ID number và ví giả, cần thay lớp truy cập dữ liệu khi tích hợp thật.
-
-`category`, ảnh/theme, bình luận và yêu thích hiện là dữ liệu ngoài chain. Khóa dữ liệu phụ nên gồm chain ID, địa chỉ contract và campaign ID để tránh trùng khi redeploy. Không dùng số dư contract làm totalRaised của một chiến dịch; không dùng deadline trên máy làm cơ sở quyết định quyền rút/hoàn. Hiển thị trạng thái chờ ký, chờ xác nhận và tải lại sau receipt hoặc khi đổi ví/mạng.
-
-## Event và lỗi
-
-| Event | Các trường |
-| --- | --- |
-| `CampaignCreated` | `id` indexed, `owner` indexed, `title`, `goal`, `deadline` |
-| `ContributionReceived` | `id` indexed, `contributor` indexed, `amount`, `totalRaised` |
-| `FundsWithdrawn` | `id` indexed, `owner` indexed, `amount` |
-| `RefundClaimed` | `id` indexed, `contributor` indexed, `amount` |
-| `CampaignHashRecorded` | `campaignId` indexed, `digest` |
-| `PaymentReceipt` | `receiptId` indexed, `campaignId` indexed, `account` indexed, `kind` uint8, `amountWei`, `digest` |
-
-ABI chứa custom errors để giải mã lỗi và hiển thị tiếng Việt:
-
-| Nhóm lỗi | Tên lỗi |
-| --- | --- |
-| Dữ liệu tạo | `EmptyTitle`, `EmptyDescription`, `TitleTooLong`, `DescriptionTooLong`, `InvalidGoal`, `InvalidDeadline` |
-| ID, góp và thời hạn | `CampaignNotFound`, `ReceiptNotFound`, `ZeroContribution`, `CampaignClosed`, `CampaignStillActive` |
-| Rút | `NotCampaignOwner`, `GoalNotReached`, `AlreadyWithdrawn` |
-| Hoàn | `GoalAlreadyReached`, `NoContribution`, `AlreadyRefunded` |
-| Chuyển ETH/bảo vệ | `TransferFailed`, `ReentrantCall`, `DirectTransfersDisabled` |
-
-Ví từ chối ký hoặc thiếu gas là lỗi ví/provider, không thuộc custom errors của contract. Giao dịch chuyển tiền bị từ chối thì revert toàn bộ, không đánh dấu đã rút/hoàn. Chỉ đánh dấu thành công trên UI sau receipt thành công.
+Lớp adapter trả TransactionResponse cho UI tự chờ receipt, nên không bọc tx.wait() trong create/approve/reject rồi trả object thành công giả. Tách parse event/sync vào afterTransaction. Hướng dẫn giao diện ở `frontend-integration.md`, checklist thực hiện ở `ly-hien-contract-handoff.md`.

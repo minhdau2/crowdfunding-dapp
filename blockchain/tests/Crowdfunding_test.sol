@@ -21,19 +21,19 @@ contract CrowdfundingBasicsTest is CrowdfundingTestBase {
     }
 
     function rejectsInvalidCreation() public {
-        uint256 future = block.timestamp + 1 days;
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("", "d", 1, future)), Crowdfunding.EmptyTitle.selector, 0);
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("t", "", 1, future)), Crowdfunding.EmptyDescription.selector, 0);
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("t", "d", 0, future)), Crowdfunding.InvalidGoal.selector, 0);
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("t", "d", 1, block.timestamp)), Crowdfunding.InvalidDeadline.selector, 0);
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("t", "d", 1, block.timestamp - 1)), Crowdfunding.InvalidDeadline.selector, 0);
+        uint256 duration = 1 days;
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("", "d", 1, duration)), Crowdfunding.EmptyTitle.selector, 0);
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("t", "", 1, duration)), Crowdfunding.EmptyDescription.selector, 0);
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("t", "d", 0, duration)), Crowdfunding.InvalidGoal.selector, 0);
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("t", "d", 1, 0)), Crowdfunding.InvalidDuration.selector, 0);
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("t", "d", 1, 91 days)), Crowdfunding.InvalidDuration.selector, 0);
         Assert.equal(funding.campaignCount(), 0, "Rejected creates do not consume IDs");
     }
 
     function enforcesTextByteLimits() public {
-        uint256 future = block.timestamp + 1 days;
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, (string(new bytes(301)), "d", 1, future)), Crowdfunding.TitleTooLong.selector, 0);
-        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.createCampaign, ("t", string(new bytes(15001)), 1, future)), Crowdfunding.DescriptionTooLong.selector, 0);
+        uint256 duration = 1 days;
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, (string(new bytes(301)), "d", 1, duration)), Crowdfunding.TitleTooLong.selector, 0);
+        _expectRevert(address(funding), abi.encodeCall(Crowdfunding.submitCampaign, ("t", string(new bytes(15001)), 1, duration)), Crowdfunding.DescriptionTooLong.selector, 0);
         Assert.equal(funding.campaignCount(), 0, "Oversized text is rejected");
     }
 

@@ -6,7 +6,7 @@ V1 đã được deploy trên Ethereum Sepolia (11155111):
 - Transaction hash: `0x1ecf1eaf7a02824aeac88de495717c5b7b09aef4122b665bd4adc3d90fdc0c0f`.
 - V1 không có hàm hash/biên lai mới. Chưa có bản ghi đầy đủ compiler settings/commit cho V1; không áp dụng ngược cấu hình biên dịch V2 cho bản đã deploy.
 
-Source và ABI hiện tại là V2, **chưa deploy**. Deploy V2 tạo contract mới, không chuyển tiền hoặc dữ liệu từ V1. Khi deploy để cả nhóm dùng chung, thêm một bản ghi cho mỗi mạng/phiên bản với:
+Source hiện tại là V3 review-v1, **chưa deploy trong lần bàn giao này**. ABI V3 xuất riêng ở frontend/src/contracts/CrowdfundingV3.json; ABI V2 ở Crowdfunding.json được giữ cho backend cũ. review-v1.build.json là bản ghi build/test, có address/transactionHash/sourceCommit = null, không phải bản ghi triển khai. Deploy V3 tạo contract mới, không chuyển tiền hoặc dữ liệu từ V1/V2. Khi deploy để cả nhóm dùng chung, thêm một bản ghi cho mỗi mạng/phiên bản với:
 
 - Tên mạng và chain ID.
 - Tên contract, địa chỉ và transaction hash đã xác nhận.

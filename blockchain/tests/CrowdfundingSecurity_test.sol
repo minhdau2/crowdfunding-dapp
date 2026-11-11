@@ -10,7 +10,8 @@ contract CrowdfundingSecurityTest is CrowdfundingTestBase {
     /// #value: 100
     function failedWithdrawalTransferRollsBackState() public payable {
         FundingActor owner = new FundingActor();
-        uint256 id = owner.create(funding, 100, block.timestamp + 1 days);
+        uint256 id = owner.create(funding, 100, 1 days);
+        funding.approveCampaign(id);
         funding.contribute{value: 100}(id);
         funding.setDeadlineForTest(id, block.timestamp);
         owner.setRejectEther(true);
@@ -41,7 +42,8 @@ contract CrowdfundingSecurityTest is CrowdfundingTestBase {
     /// #value: 300
     function blocksReentrantWithdrawal() public payable {
         FundingActor owner = new FundingActor();
-        uint256 first = owner.create(funding, 100, block.timestamp + 1 days);
+        uint256 first = owner.create(funding, 100, 1 days);
+        funding.approveCampaign(first);
         uint256 second = _create(1000);
         funding.contribute{value: 100}(first);
         funding.contribute{value: 200}(second);
