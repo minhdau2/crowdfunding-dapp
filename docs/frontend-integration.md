@@ -1,6 +1,6 @@
 # Bàn giao giao diện và lớp tích hợp
 
-Kim Ba phụ trách giao diện; Lý Hiền triển khai adapter trong `frontend/src/lib/integrationAdapter.js`. Bản mặc định xuất `null`, không chứa dữ liệu hoặc kết quả giao dịch giả. Không có thay đổi contract/backend trong lần bàn giao UI này.
+Kim Ba phụ trách giao diện; Lý Hiền triển khai adapter trong `frontend/src/lib/integrationAdapter.js`. Adapter hiện đã triển khai kết nối V3 và các API nội dung. Các đoạn mô tả trạng thái chưa tích hợp bên dưới là bối cảnh bàn giao ban đầu; quy ước phương thức vẫn áp dụng. Trạng thái mới xem [cách chạy](run-v3-integration.md) và [API nội dung](content-api.md). Ảnh còn hỗ trợ URL cùng origin `/api/images/<uuid>` do backend cung cấp.
 
 ## Cập nhật luồng duyệt chiến dịch
 

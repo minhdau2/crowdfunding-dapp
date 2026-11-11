@@ -4,6 +4,7 @@ import { campaignTiming, dateFormatter, durationLabel, hasReachedGoal, parseAmou
 import { errorMessage } from '../lib/integration'
 import { CampaignArt, FundingProgress } from '../components/CampaignCard'
 import WalletGate from '../components/WalletGate'
+import CampaignMetadata from '../components/CampaignMetadata'
 
 export default function CampaignDetail({ id }) {
   const app = useApp()
@@ -56,7 +57,9 @@ export default function CampaignDetail({ id }) {
     } catch (issue) { setError(issue.message) }
   }
   return <section className="page-section"><a className="back-link" href="#/">← Khám phá chiến dịch</a><div className="detail-heading"><div><span className={`status ${status}`}>{statusLabels[status]}</span><h1 className="page-title">{campaign.title}</h1><p className="page-description">Tạo bởi <span title={campaign.owner}>{shortAddress(campaign.owner)}</span> · {campaign.category}</p></div><div className="list-actions"><button className="secondary-button" onClick={refresh} disabled={app.busy}>Tải lại</button><button className="secondary-button" aria-pressed={favorite} disabled={blocked || !app.features.toggleFavorite || socialState !== 'ready'} onClick={() => app.toggleFavorite(id)}>{favorite ? '♥ Đã yêu thích' : '♡ Lưu yêu thích'}</button></div></div>
+    {campaign.contentHidden && <p className="inline-callout">Nội dung đã được ẩn trên website. Bạn vẫn có thể kiểm tra khoản góp và thực hiện rút/hoàn khi đủ điều kiện.</p>}
     <div className="detail-layout"><div><div className="detail-art"><CampaignArt campaign={campaign} /></div><section className="content-panel"><h2>Câu chuyện chiến dịch</h2><p className="full-description">{campaign.description}</p></section>
+      {campaign.owner === app.account && app.authenticated && <CampaignMetadata key={`${campaign.id}:${app.account}`} campaign={campaign} onSaved={() => { refresh(); void app.refresh() }} />}
       <section className="content-panel"><h2>Bình luận {socialState === 'ready' && <span className="muted">({comments.length})</span>}</h2><WalletGate />
         {socialState !== 'ready' && <p className="inline-callout" role="status">{socialState === 'loading' ? 'Đang tải bình luận…' : socialState === 'error' ? socialError : 'Bình luận và yêu thích hiện chưa sẵn sàng.'}</p>}
         <form className="comment-form" onSubmit={async event => { event.preventDefault(); if (await app.addComment(id, comment)) setComment('') }}><label htmlFor="new-comment">Chia sẻ ý kiến</label><textarea id="new-comment" rows={3} required maxLength={1000} disabled={blocked || !app.features.addComment || socialState !== 'ready'} value={comment} onChange={event => setComment(event.target.value)} placeholder="Viết bình luận của bạn…" /><div className="card-bottom"><span>{comment.length}/1.000 ký tự</span><button className="primary-button" disabled={blocked || !app.features.addComment || socialState !== 'ready' || !comment.trim()}>Gửi bình luận</button></div></form>

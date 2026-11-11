@@ -24,7 +24,7 @@ export default function CreateCampaign() {
   }
   function change(event) { setCreated(false); setReview(false); setValues({ ...values, [event.target.name]: event.target.value }) }
   function payload() {
-    const result = { title: values.title.trim(), description: values.description.trim(), goalEth: values.goalEth,
+    const result = { title: values.title.trim(), description: values.description.trim(), goalEth: values.goalEth.trim(),
       durationDays: values.durationDays, durationSeconds: (BigInt(values.durationDays || '0') * 86400n).toString(), ...(metadataReady ? { category: values.category, imageFile: file } : {}) }
     validateCampaign(result)
     return result

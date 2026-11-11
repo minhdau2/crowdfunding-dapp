@@ -47,6 +47,7 @@ export default function Admin() {
       if (result?.ok !== true) throw new Error('Chưa xác nhận được kết quả quản trị. Hãy tải lại trước khi thử lại.')
       setTarget(null); setReason(''); setRevision(value => value + 1)
       app.setNotice('Đã lưu thay đổi quản lý nội dung.')
+      void app.refresh()
     } catch (issue) { setError(errorMessage(issue)) }
     finally { setSaving(false) }
   }

@@ -94,9 +94,10 @@ export function normalizeCampaign(record) {
   if (approvalStatus !== 'approved' && (contributionWei !== '0' || record.hasRefunded === true)) throw new Error('Chiến dịch chưa duyệt không thể có thanh toán.')
   const status = approvalStatus !== 'approved' ? approvalStatus : BigInt(proof.blockTimestamp) < BigInt(deadlineSeconds) ? 'active'
     : BigInt(raised) >= BigInt(goalWei) ? 'successful' : 'unsuccessful'
-  const image = typeof record.image === 'string' && /^https:\/\//i.test(record.image) ? record.image : ''
+  const hidden = record.contentHidden === true
+  const image = !hidden && typeof record.image === 'string' && (/^https:\/\//i.test(record.image) || /^\/api\/images\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(record.image)) ? record.image : ''
   return {
-    id, owner, title: record.title, description: record.description, goalWei, totalRaisedWei: raised,
+    id, owner, title: hidden ? 'Nội dung chiến dịch đã được ẩn' : record.title, description: hidden ? 'Nội dung đang được quản trị viên xem xét. Các quyền góp/rút/hoàn trên blockchain vẫn tuân theo contract.' : record.description, goalWei, totalRaisedWei: raised,
     totalRefundedWei: refunded, goalEth: formatAmount(goalWei), totalRaisedEth: formatAmount(raised),
     deadline: deadlineSeconds === '0' ? null : new Date(deadlineMs).toISOString(), deadlineSeconds, withdrawn: record.withdrawn, status,
     approvalStatus, durationSeconds, approvedAtSeconds, legacy,
@@ -104,6 +105,6 @@ export function normalizeCampaign(record) {
     contributions: viewer ? { [viewer]: formatAmount(contributionWei) } : {},
     refunded: viewer ? { [viewer]: record.hasRefunded } : {}, viewer,
     category: typeof record.category === 'string' ? record.category.slice(0, 60) : 'Cộng đồng',
-    image, snapshot: { ...proof, contractAddress },
+    image, contentHidden: hidden, snapshot: { ...proof, contractAddress },
   }
 }
