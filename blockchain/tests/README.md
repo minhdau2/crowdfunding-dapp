@@ -1,36 +1,34 @@
-# Kiểm thử contract trong Remix
+# Kiểm thử contract duyệt chiến dịch V3
 
-Bộ test có **25 ca** trong bốn file:
+Ngày 2026-11-11, source V3 được compile bằng solc 0.8.34+commit.80d5c536, EVM cancun, optimizer enabled 200 runs, Via IR tắt và chạy bằng runner chính thức @remix-project/remix-tests@0.2.91 với Remix Simulator: **49 passed, 0 failed**. Không dùng kết quả 25 test của V2 để thay cho lần chạy source mới.
 
-| File | Số ca | Nội dung |
+| File | Ca | Phạm vi |
 | --- | --- | --- |
-| `Crowdfunding_test.sol` | 7 | Tạo/đánh ID, đầu vào sai, giới hạn chuỗi, ID không tồn tại, góp nhiều lần/nhiều ví, cách ly chiến dịch, chặn góp 0/đúng hạn, chặn chuyển ETH trực tiếp |
-| `CrowdfundingSettlement_test.sol` | 6 | Chặn rút sớm, rút một lần, đúng chủ, không lấy tiền chiến dịch khác, hoàn từng ví một lần, giữ lịch sử, chặn hoàn sai điều kiện, thiếu đúng 1 wei vẫn thất bại |
-| `CrowdfundingSecurity_test.sol` | 4 | Chuyển ETH lỗi thì hoàn tác trạng thái và cho thử lại; chống tái nhập lúc rút và hoàn |
-| `CrowdfundingHash_test.sol` | 8 | Schema hash chiến dịch; phân biệt ID; gắn biên lai với ví, số tiền, chiến dịch và loại thao tác; biên lai rút/hoàn; rollback khi rút/hoàn lỗi và thử lại; ID không tồn tại |
+| Crowdfunding_test.sol | 7 | ID/input/chuỗi, góp đúng, tách chiến dịch, đúng deadline, direct ETH |
+| CrowdfundingSettlement_test.sol | 6 | Đủ/thiếu vốn, quyền rút, rút/hoàn một lần, giữ lịch sử, thiếu 1 wei |
+| CrowdfundingSecurity_test.sol | 4 | Payout lỗi rollback/retry, chống tái nhập rút/hoàn |
+| CrowdfundingHash_test.sol | 8 | Proposal alias/hash, biên lai ví/số tiền/loại/ID, rollback receipt |
+| CrowdfundingApproval_test.sol | 7 | Pending/Rejected chặn mọi thanh toán, đúng reviewer, deadline từ duyệt, quyết định một lần |
+| CrowdfundingReviewValidation_test.sol | 6 | Thời lượng nguyên 1–90 ngày, lý do rỗng/ngắn/blank/dài/UTF-8, ID sai, chặn selector cũ, submit không payable |
+| CrowdfundingReviewer_test.sol | 6 | Chuyển quyền hai bước, thu hồi quyền cũ, hủy/thay nominee, chặn ví ngoài và reviewer lấy tiền chủ khác |
+| CrowdfundingDecisionHash_test.sol | 5 | Schema/version, proposal không bị ghi đè, hash duyệt/từ chối, thay reviewer/time/reason/deadline, chống reuse khác chain/contract |
 
-## Cách chạy trong Remix Desktop
+## Chạy lại trong Remix Desktop
 
-1. Mở workspace là thư mục `blockchain` của repo.
-2. Trong Solidity Compiler chọn **0.8.34**, EVM **cancun**, optimizer bật **200 runs**, Via IR tắt.
-3. Bật plugin **Solidity Unit Testing** trong Plugin Manager.
-4. Chọn thư mục `tests`, chọn bốn file kết thúc bằng `_test.sol` rồi bấm Run. Giữ compiler/optimizer giống cấu hình ở bước 2 nếu plugin có thiết lập riêng.
-5. Kết quả mong đợi: **25 passing, 0 failing**. Các annotation `#value` cấp số wei mô phỏng cho test payable; không cần chuyển ETH thật.
+Mở workspace blockchain, chọn compiler/settings trên, bật plugin Solidity Unit Testing, chọn 8 file *_test.sol trong tests rồi Run. Kỳ vọng 49 passing, 0 failing. Import remix_tests.sol do Remix cung cấp. Annotation #value là số wei mô phỏng cấp cho test payable, không dùng ETH Sepolia. Một số suite gần giới hạn kích thước runtime của EVM, phải giữ optimizer 200 runs.
 
-Các import `remix_tests.sol` do Remix cung cấp. Không chạy các bài test này trên Sepolia. Test tự tạo contract mới cho từng ca qua `beforeEach()`.
+beforeEach triển khai harness mới với reviewer là test suite. Helper _create submit rồi approve qua đúng hàm production; helper _submit giữ Pending. Các ca actor-owner cũng phải được reviewer approve trước khi góp. Không có đường bỏ qua duyệt trong contract thật.
 
-## Phạm vi và kết quả đã chạy
+CrowdfundingHarness chỉ có setter deadline phục vụ test nhánh tại hạn trong một transaction; không dùng nó làm contract ứng dụng. Setter cố ý làm deadline khác commitment cũ, không mô phỏng khả năng sửa deadline của production. Các test hash xác minh commitment gốc trước setter. Production không có setter thời gian hoặc hàm sửa điều khoản.
 
-Ngày **2026-11-04**, mã này được biên dịch bằng `solc 0.8.34+commit.80d5c536`, optimizer 200/cancun và chạy qua runner chính thức `@remix-project/remix-tests@0.2.91` cùng Remix Simulator trong môi trường kiểm tra tạm ngoài repo: **25 passed, 0 failed**. Không thêm framework hoặc npm project vào workspace `blockchain`.
+## Kiểm tra bytecode production và ethers
 
-Đây là kết quả chạy runner, chưa phải xác nhận đã bấm Run trên Remix Desktop của từng thành viên. Simulator có thông báo trace `dumpStorage ... existing account` khi theo dõi contract con vừa tạo; các giao dịch test vẫn hoàn tất và assertion được runner ghi nhận. Kết quả compile không có lỗi hoặc cảnh báo Solidity.
+Đã deploy bytecode Crowdfunding thật trong simulator cục bộ, không kế thừa harness: constructor từ chối reviewer 0; Pending/Rejected không góp; ví ngoài không duyệt; trì hoãn duyệt qua mốc timestamp rồi kiểm deadline bắt đầu tại block duyệt; các hàm ethers proposalDigest/decisionDigest/receiptDigest khớp getter và event cho gửi/duyệt/từ chối UTF-8/góp.
 
-Đã kiểm tra thêm tính tương thích ethers v6 trên contract production deploy vào Remix Simulator cục bộ: tính lại hash chiến dịch/biên lai bằng `AbiCoder`, đối chiếu getter và event sau khi tạo/góp thành công. RPC chain ID của simulator được đặt khớp EVM nội bộ (1); đây là mô phỏng cục bộ, không phải giao dịch Mainnet hoặc Sepolia.
+Các vector hash ghi nhận từ lần chạy bytecode này ở frontend/test/fixtures/review-hash-vectors.json, dùng cho 4 test mã hóa bổ sung. Chúng là fixture test cục bộ, không phải deployment hoặc dữ liệu chiến dịch Sepolia. Simulator có EVM chain ID nội bộ 1; lần kiểm ethers đặt RPC chain ID khớp 1, không kết nối Mainnet.
 
-`helpers/CrowdfundingTestHelpers.sol` chỉ phục vụ kiểm thử:
+Runner có thông báo debugger dumpStorage về contract con mới tạo; các transaction và assertion vẫn hoàn tất. Compile source/test không có lỗi/cảnh báo Solidity. Kết quả chi tiết gắn SHA-256 source/test và cấu hình ở results-review-v1.json. Đây là kết quả runner, chưa xác nhận đã bấm Run trên Remix Desktop của từng thành viên.
 
-- `CrowdfundingHarness` kế thừa contract thật, thêm `setDeadlineForTest` để đặt deadline tại `block.timestamp` trong cùng giao dịch. Điều này giúp test chính xác nhánh trước/tại hạn mà không phải chờ nhiều phút. Setter chỉ phục vụ test và không cập nhật hash đã chốt lúc tạo; không dùng nó để mô phỏng khả năng sửa hạn trên production.
-- `FundingActor` mô phỏng ví hợp đồng nhận ETH, từ chối ETH và cố gọi lại lúc nhận tiền.
-- Contract production `contracts/Crowdfunding.sol` không có hàm sửa deadline. **Chỉ deploy Crowdfunding khi chạy ứng dụng.**
+## Còn cần thử thực tế
 
-Bộ test này không mô phỏng việc thời gian mạng thực trôi qua, kết nối MetaMask, gas Sepolia hoặc giao diện React. Khi demo thủ công, cần thử ít nhất một chiến dịch đủ vốn và một chiến dịch thiếu vốn sau khi chờ deadline thật, theo [blockchain/README.md](../README.md).
+MetaMask, RPC Sepolia, hết hạn theo thời gian mạng thật, quyền reviewer của ví deploy đã chọn, luồng UI và backend auth/admin phải được kiểm tra sau deploy/tích hợp. Cần một chiến dịch đủ vốn và một thiếu vốn đã hết hạn, thử rút/hoàn lặp, từ chối ký, đổi ví/mạng, sync lỗi sau mined và đọc/đối chiếu MongoDB cùng block.

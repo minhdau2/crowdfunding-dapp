@@ -1,0 +1,38 @@
+{
+  "contract": "Crowdfunding",
+  "contractVersion": 3,
+  "workflow": "review-v1",
+  "hashVersion": 2,
+  "builtOn": "2026-11-11",
+  "settings": {
+    "compiler": "0.8.34+commit.80d5c536",
+    "evmVersion": "cancun",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "viaIR": false
+  },
+  "sourcePath": "blockchain/contracts/Crowdfunding.sol",
+  "sourceSha256": "5d6efba9cd8b342adf4059f057c09f521aaa32aa6c23673c71e918392bdc19ea",
+  "abiPath": "frontend/src/contracts/CrowdfundingV3.json",
+  "abiSha256": "67dcf6460fa820872d5be13b657117a23559843fb0b9791a00d3f36833b052c1",
+  "runtimeBytes": 8931,
+  "runtimeBytecodeKeccak256": "0xcb6486860472c48fd17e171bd6eea65f48ceb5856e50baee0ef9b2c1d8667b9f",
+  "sourceCommit": null,
+  "baseCommit": "6e3a65542693b438368c5005411649c906f242d5",
+  "deployment": {
+    "network": "Ethereum Sepolia",
+    "chainId": 11155111,
+    "deployed": false,
+    "address": null,
+    "transactionHash": null,
+    "initialReviewer": null
+  },
+  "commentOnlyVerification": {
+    "verifiedOn": "2026-11-11",
+    "abiUnchanged": true,
+    "executableRuntimeUnchanged": true,
+    "note": "Vietnamese comments only; Solidity metadata changes with source text."
+  }
+}

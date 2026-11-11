@@ -26,7 +26,8 @@ contract CrowdfundingSettlementTest is CrowdfundingTestBase {
     /// #value: 300
     function onlyOwnerWithdrawsAndCannotTakeOtherCampaignFunds() public payable {
         FundingActor owner = new FundingActor();
-        uint256 first = owner.create(funding, 100, block.timestamp + 1 days);
+        uint256 first = owner.create(funding, 100, 1 days);
+        funding.approveCampaign(first);
         uint256 second = _create(1000);
         funding.contribute{value: 100}(first);
         funding.contribute{value: 200}(second);

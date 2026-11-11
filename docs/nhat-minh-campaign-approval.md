@@ -1,5 +1,9 @@
 # Nhật Minh bổ sung duyệt chiến dịch trên contract
 
+## Trạng thái ngày 2026-11-11
+
+Đã thực hiện source V3, 49 ca test Solidity đạt và ABI V3 riêng; chưa deploy. Đặc tả chính thức: [contract-interface.md](contract-interface.md), checklist tích hợp: [ly-hien-contract-handoff.md](ly-hien-contract-handoff.md). Đã chốt thời lượng nguyên 1–90 ngày, một reviewer chuyển quyền hai bước và cho phép tự duyệt. Hash quyết định gắn proposalHash, trạng thái, reviewer, thời điểm, hạn chót và hash lý do; HASH_VERSION 2. Các đoạn bên dưới lưu yêu cầu ban đầu, không thay thế đặc tả đã thực hiện.
+
 ## Quyết định và phạm vi
 
 Nhóm chọn duyệt có hiệu lực on-chain: chưa được duyệt thì contract không nhận góp, kể cả gọi trực tiếp từ Remix. Kim Ba chỉ chuẩn bị frontend. Tài liệu này là yêu cầu cho lần sửa tiếp theo của Nhật Minh, không xác nhận contract hiện tại đã có tính năng này. Không sửa hoặc deploy contract trong nhiệm vụ giao diện.

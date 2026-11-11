@@ -30,7 +30,7 @@ npm run build
 | `#/mine`, `#/contributions`, `#/favorites` | Dữ liệu theo ví hiện tại, quản lý chiến dịch/khoản góp/yêu thích |
 | `#/admin` | Cổng quản trị: duyệt chiến dịch on-chain và các mục quản lý nội dung/bình luận/báo cáo/lịch sử |
 
-Phần duyệt chiến dịch đang chờ Nhật Minh sửa contract theo [yêu cầu](../docs/nhat-minh-campaign-approval.md). UI có mục Duyệt chiến dịch, cần isReviewer độc lập quyền isAdmin. Chưa có adapter campaignWorkflow review-v1 thì nút gửi/duyệt/từ chối bị khóa. Mục tiêu, chủ, thời lượng được chốt lúc gửi; deadline chỉ xác lập khi duyệt.
+Phần duyệt chiến dịch đã có source/ABI V3 và đang chờ deploy/tích hợp theo [yêu cầu](../docs/nhat-minh-campaign-approval.md). UI có mục Duyệt chiến dịch, cần isReviewer độc lập quyền isAdmin. Chưa có adapter campaignWorkflow review-v1 thì nút gửi/duyệt/từ chối bị khóa. Mục tiêu, chủ, thời lượng được chốt lúc gửi; deadline chỉ xác lập khi duyệt.
 
 Phần quản lý nội dung admin tác động ngoài chain. Không có giao diện sửa goal/deadline/số góp, hủy chiến dịch on-chain hoặc rút thay chủ. Khi chưa có phiên admin, khu vực này chỉ hiển thị yêu cầu đăng nhập/quyền và danh mục chức năng, không tải dữ liệu quản trị. Backend phải kiểm tra quyền thật ở mọi API; giao diện không tạo ra quyền truy cập.
 
@@ -42,4 +42,4 @@ Phần quản lý nội dung admin tác động ngoài chain. Không có giao di
 
 Transaction dialog đi từ xem lại → chờ ký → chờ receipt → thành công/lỗi. Mã giao dịch thật được giữ để tra cứu khi RPC lỗi hoặc đổi ví. Đồng bộ thất bại sau receipt thành công phải báo chưa đồng bộ, không làm người dùng hiểu giao dịch chưa thực hiện.
 
-16 test hiện tại kiểm tra chuẩn hóa dữ liệu, độ chính xác tiền/ID, điều kiện snapshot và receipt. Chúng không chứng minh ví, xác thực server, phân quyền admin hoặc giao dịch Sepolia đã được tích hợp. Các luồng đó cần kiểm thử end-to-end sau khi nối adapter.
+20 test hiện tại kiểm tra chuẩn hóa dữ liệu, độ chính xác tiền/ID, điều kiện snapshot và receipt. Trong đó 4 test hash dùng vector đã đối chiếu bytecode V3 cục bộ. Chúng không chứng minh ví, xác thực server, phân quyền admin hoặc giao dịch Sepolia đã được tích hợp. Các luồng đó cần kiểm thử end-to-end sau khi nối adapter.

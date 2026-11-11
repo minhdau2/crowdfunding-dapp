@@ -1,0 +1,61 @@
+{
+  "network": "local Remix Simulator only",
+  "chainId": "1",
+  "contractAddress": "0xd9145CCE52D386f254917e481eB44e9943F39138",
+  "delayedApprovalSeconds": "2",
+  "vectors": {
+    "proposal": {
+      "values": {
+        "chainId": "1",
+        "contractAddress": "0xd9145CCE52D386f254917e481eB44e9943F39138",
+        "campaignId": "1",
+        "owner": "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2",
+        "goalWei": "1000",
+        "durationSeconds": "86400"
+      },
+      "digest": "0x3bb15dffde4d0dcdb217f1b052ab0b4be8c1a6319e6d5f662d25f563b43a2c10"
+    },
+    "approval": {
+      "values": {
+        "chainId": "1",
+        "contractAddress": "0xd9145CCE52D386f254917e481eB44e9943F39138",
+        "campaignId": "1",
+        "proposalHash": "0x3bb15dffde4d0dcdb217f1b052ab0b4be8c1a6319e6d5f662d25f563b43a2c10",
+        "approvalStatus": "1",
+        "decidedBy": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+        "decidedAt": "1794366419",
+        "approvedAt": "1794366419",
+        "deadlineSeconds": "1794452819",
+        "rejectionReason": ""
+      },
+      "digest": "0x3f0405603b588e41c812bb68349cbb162be47742cb93a0aa844b31c408be3639"
+    },
+    "payment": {
+      "values": {
+        "chainId": "1",
+        "contractAddress": "0xd9145CCE52D386f254917e481eB44e9943F39138",
+        "campaignId": "1",
+        "receiptId": "1",
+        "kind": "0",
+        "account": "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db",
+        "amountWei": "123"
+      },
+      "digest": "0xcc2216901cfd89cab2f81fc760dd60eca76d4586732165096a1f625df9b53e41"
+    },
+    "rejection": {
+      "values": {
+        "chainId": "1",
+        "contractAddress": "0xd9145CCE52D386f254917e481eB44e9943F39138",
+        "campaignId": "2",
+        "proposalHash": "0xe030aae2c42a48defb168442befe8e97555b6e8b1158c5f1e803526f8603b742",
+        "approvalStatus": "2",
+        "decidedBy": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+        "decidedAt": "1794366419",
+        "approvedAt": "0",
+        "deadlineSeconds": "0",
+        "rejectionReason": "Thiếu thông tin về kế hoạch sử dụng vốn"
+      },
+      "digest": "0x839d3523509a4d383d4a686e7c404f6303c9bbebed7b55c7004d09063eb6e2c1"
+    }
+  }
+}
