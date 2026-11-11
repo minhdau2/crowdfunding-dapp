@@ -37,9 +37,9 @@ Ngày 11/11/2026 đã đọc RPC thật: đúng phiên bản V3/hash2/review-v1,
 
 Giao dịch deploy được kiểm lại qua RPC: 0x2d9c5ad35ba5b72731cef0884f0410bd37e475b1e0b3c704c9a163b5b2a27b0d, status 1, block 12109136, contractAddress khớp. Source hiện tại đã compile lại bằng Solidity 0.8.34/cancun/Via IR tắt và **optimizer TẮT**: bytecode thực thi khớp deployment sau khi bỏ metadata Solidity. Runtime gồm metadata dài 15791 byte. Hash phần thực thi: 0x73d3c75377d5dd3f735d867834a45c789ddbb8c9e865d866890fc2dd18732da8. Adapter/backend kiểm tra hash này trước khi đọc/ghi.
 
-Điểm khác hồ sơ build cũ: review-v1.build.json ghi optimizer bật 200 runs (8931 byte), không khớp bản deploy thực tế. Không sửa hồ sơ build cũ để giả thành receipt deployment. Metadata đầy đủ không khớp bản compile lại; chưa kết luận cùng metadata/path hoặc xác minh constructor ban đầu. Bộ 49 test cũ chạy với optimizer bật, chưa chạy lại bộ Solidity cho cấu hình optimizer tắt.
+Điểm khác hồ sơ build cũ: review-v1.build.json ghi optimizer bật 200 runs (8931 byte), không khớp bản deploy thực tế. Không sửa hồ sơ build cũ để giả thành receipt deployment. Metadata đầy đủ không khớp bản compile lại; chưa kết luận cùng metadata/path. initialReviewer đã được đọc lại từ input giao dịch deploy trong [hồ sơ mới](ly-hien-integration-handoff.md). Bộ 49 test cũ chạy với optimizer bật, chưa chạy lại bộ Solidity cho cấu hình optimizer tắt.
 
-Chưa gửi giao dịch MetaMask trong lần tích hợp: cần người dùng thử ký đăng nhập, tạo/duyệt/góp và rút/hoàn sau hạn. Chưa có indexer lịch sử receipt/reorg cho toàn bộ log; snapshot kiểm tra block hash, sync có thể thử lại. Danh sách hiện tải toàn bộ theo lô nhỏ, phù hợp demo ít chiến dịch; quy mô lớn cần phân trang/indexer.
+Agent không tự ký giao dịch MetaMask. Hồ sơ mới đã ghi nhận giao dịch tạo/duyệt/góp của người dùng qua RPC; còn cần nghiệm thu từ chối/rút/hoàn và giao diện nội dung. Script evidence xuất lịch sử receipt/log với block hash; chưa có indexer liên tục xử lý reorg. Danh sách hiện tải toàn bộ theo lô nhỏ, phù hợp demo ít chiến dịch; quy mô lớn cần phân trang/indexer.
 
 ## Kiểm thử
 

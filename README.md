@@ -4,6 +4,8 @@
 
 ## Trạng thái hiện tại
 
+Hồ sơ mới nhất: [bàn giao tích hợp Lý Hiền](docs/ly-hien-integration-handoff.md), gồm commit, bằng chứng Sepolia và checklist chưa nghiệm thu.
+
 - Frontend đã nối MetaMask, đăng nhập chữ ký, giao dịch V3 và API bình luận/yêu thích/ảnh/báo cáo/quản trị nội dung. Xem [cách chạy bản tích hợp](docs/run-v3-integration.md) và [API nội dung](docs/content-api.md). Kiểm thử tự động không thay thế nghiệm thu MetaMask thực tế.
 - Đã có `blockchain/contracts/Crowdfunding.sol`, ABI và 49 ca test Remix cho nghiệp vụ tạo/góp/rút/hoàn vốn. Kết quả chạy runner: 49 passed, 0 failed; xem [kiểm thử contract](blockchain/tests/README.md).
 - Mạng tích hợp: **Ethereum Sepolia (11155111)**, V3 tại `0x407145f033F6e19F21e5118ffCA15f0B3644cD55`. Backend/frontend dùng ABI V3; bytecode thực thi đã đối chiếu source với optimizer **tắt**, khác cấu hình bộ 49 test cũ. Không dùng lại địa chỉ V1/V2.
