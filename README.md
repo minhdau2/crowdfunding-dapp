@@ -4,10 +4,12 @@
 
 ## Trạng thái hiện tại
 
-- Frontend Chung Tay đã có giao diện danh sách, tạo và chi tiết chiến dịch; hiện chạy mô phỏng bằng localStorage, chưa dùng ví/contract thật.
+- Frontend Chung Tay có giao diện người góp, người tạo và admin nội dung; đã bỏ ví/dữ liệu/giao dịch mô phỏng. Đang chờ adapter ví/API của Lý Hiền: thao tác chưa tích hợp bị khóa, không gửi giao dịch thật. Xem [bàn giao frontend](docs/frontend-integration.md).
 - Đã có `blockchain/contracts/Crowdfunding.sol`, ABI và 25 ca test Remix cho nghiệp vụ tạo/góp/rút/hoàn vốn. Kết quả chạy runner: 25 passed, 0 failed; xem [kiểm thử contract](blockchain/tests/README.md).
 - Mạng tích hợp đã chọn: **Ethereum Sepolia (11155111)**. Bản V1 đã deploy tại `0xCe15C87F7D03325D9fcE8190f04Fcbc6a2a366F3`; bản source V2 bổ sung hash tài chính và biên lai chưa deploy. UI chưa tích hợp giao dịch thật.
 - Thư mục `blockchain` là workspace Solidity mở trực tiếp bằng Remix Desktop, không cần npm install ở thư mục này.
+
+Yêu cầu mới: duyệt on-chain trước khi nhận góp; Nhật Minh phụ trách sửa contract theo [ghi chú công việc](docs/nhat-minh-campaign-approval.md). Frontend đã chuẩn bị trạng thái chờ duyệt/đã duyệt/từ chối, nhưng contract hiện tại chưa có chức năng này.
 
 ## Phân công
 
