@@ -4,12 +4,14 @@
 
 ## Trạng thái hiện tại
 
-- Frontend Chung Tay có giao diện người góp, người tạo và admin nội dung; đã bỏ ví/dữ liệu/giao dịch mô phỏng. Đang chờ adapter ví/API của Lý Hiền: thao tác chưa tích hợp bị khóa, không gửi giao dịch thật. Xem [bàn giao frontend](docs/frontend-integration.md).
+Hồ sơ mới nhất: [bàn giao tích hợp Lý Hiền](docs/ly-hien-integration-handoff.md), gồm commit, bằng chứng Sepolia và checklist chưa nghiệm thu.
+
+- Frontend đã nối MetaMask, đăng nhập chữ ký, giao dịch V3 và API bình luận/yêu thích/ảnh/báo cáo/quản trị nội dung. Xem [cách chạy bản tích hợp](docs/run-v3-integration.md) và [API nội dung](docs/content-api.md). Kiểm thử tự động không thay thế nghiệm thu MetaMask thực tế.
 - Đã có `blockchain/contracts/Crowdfunding.sol`, ABI và 49 ca test Remix cho nghiệp vụ tạo/góp/rút/hoàn vốn. Kết quả chạy runner: 49 passed, 0 failed; xem [kiểm thử contract](blockchain/tests/README.md).
-- Mạng tích hợp đã chọn: **Ethereum Sepolia (11155111)**. Bản V1 đã deploy tại `0xCe15C87F7D03325D9fcE8190f04Fcbc6a2a366F3`; source hiện tại là V3 có duyệt on-chain, 49 test đã chạy đạt và chưa deploy. ABI V3 xuất riêng để giữ backend/ABI V2 đang dùng. UI chưa tích hợp giao dịch thật.
+- Mạng tích hợp: **Ethereum Sepolia (11155111)**, V3 tại `0x407145f033F6e19F21e5118ffCA15f0B3644cD55`. Backend/frontend dùng ABI V3; bytecode thực thi đã đối chiếu source với optimizer **tắt**, khác cấu hình bộ 49 test cũ. Không dùng lại địa chỉ V1/V2.
 - Thư mục `blockchain` là workspace Solidity mở trực tiếp bằng Remix Desktop, không cần npm install ở thư mục này.
 
-Yêu cầu mới: duyệt on-chain trước khi nhận góp; Nhật Minh phụ trách sửa contract theo [ghi chú công việc](docs/nhat-minh-campaign-approval.md). Frontend đã chuẩn bị trạng thái chờ duyệt/đã duyệt/từ chối, contract V3 hiện đã triển khai chức năng này và có bộ test/ABI bàn giao, còn cần deploy và tích hợp. Xem [bàn giao Lý Hiền](docs/ly-hien-contract-handoff.md).
+Workflow: gửi đề xuất → reviewer duyệt/từ chối → góp → hết hạn → chủ rút hoặc người góp hoàn. Quyền quản trị nội dung backend được cấp riêng, không suy từ reviewer. [Bàn giao contract gốc](docs/ly-hien-contract-handoff.md) ghi trạng thái trước tích hợp; ưu tiên hướng dẫn chạy và hồ sơ nghiệm thu mới.
 
 ## Phân công
 

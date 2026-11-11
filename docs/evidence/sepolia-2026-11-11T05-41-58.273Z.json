@@ -1,0 +1,317 @@
+{
+  "collectedAt": "2026-11-11T05:41:58.273Z",
+  "source": "Sepolia RPC; receipts + canonical logs + same-block getters; no UI assertions",
+  "git": {
+    "headAtCollection": "f5832a94e72dbc49e78e6d2d28644214893d7635",
+    "workingTreeDirty": false
+  },
+  "sourceSha256": {
+    "blockchain/contracts/Crowdfunding.sol": "0f8c730d7233323dd1b5435ec88e16daefd89d34364cce98ec3dde6ee06bc35d",
+    "frontend/src/contracts/CrowdfundingV3.json": "c66e08f926539129f0002c9a1303855a1b3da8a8ef0916d08e974a3a776f3b51",
+    "frontend/src/lib/chainReader.js": "46074052113911598bd2f2233d3a5425b19637a936378efeb0bfed355ab7c2f8",
+    "frontend/src/lib/integrationAdapter.js": "151e07c629ce03c997389cd012ddd0ec669a474423d72ffea5322c1fa2353772",
+    "backend/server.js": "62ce576f25db4851c1297382a74cb58480ebb68f1ec6843a836e35bb881d0601",
+    "backend/auth.js": "1f9738c0dfd0ca7cf200e5444c5cbf112e5ddfcf62d201a6269cb6f54c5b6d0b",
+    "backend/content.js": "4fd09016ff14ed7743432013bf56013fc0b86e7972ed7843c0fa86395f6a3878",
+    "backend/package-lock.json": "0d0e0da5b9329f4b0f898fd537d8f8469fa6275d9887070b88e0cce213a48a48"
+  },
+  "chainId": 11155111,
+  "contractAddress": "0x407145f033F6e19F21e5118ffCA15f0B3644cD55",
+  "deployment": {
+    "transactionHash": "0x2d9c5ad35ba5b72731cef0884f0410bd37e475b1e0b3c704c9a163b5b2a27b0d",
+    "status": 1,
+    "blockNumber": 12109136,
+    "blockHash": "0xba58042c1098a9ea096709f773cd48b7e6f1332079fe31ec9a9fd63b1c3f202d",
+    "deployer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+    "initialReviewer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+    "constructorMethod": "Last ABI address word of direct contract-creation input; source runtime independently matched."
+  },
+  "verification": {
+    "contractVersion": "3",
+    "hashVersion": "2",
+    "workflow": "review-v1",
+    "executableHash": "0x73d3c75377d5dd3f735d867834a45c789ddbb8c9e865d866890fc2dd18732da8",
+    "runtimeBytes": 15791,
+    "compiler": "0.8.34",
+    "evm": "cancun",
+    "optimizer": false,
+    "viaIR": false,
+    "note": "Executable bytes match source with optimizer OFF; historical build/tests used optimizer ON. Metadata not asserted equal."
+  },
+  "anchor": {
+    "number": 12109737,
+    "hash": "0x057e3c5ea0ea04f1f39917d38b403d8fdef8748db3453eaf9492da837eced6f2",
+    "timestamp": "2026-11-11T05:41:48.000Z",
+    "finalizedBlock": 12109667
+  },
+  "reviewer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+  "campaigns": [
+    {
+      "campaignId": "1",
+      "owner": "0x9e24cbc8a02d3435c2fb774cd6cc22724cf29ea7",
+      "title": "Chiến dịch thử nghiệm",
+      "description": "Kiểm tra luồng duyệt và góp vốn",
+      "goalWei": "10000000000000000",
+      "deadlineSeconds": "1794455304",
+      "totalRaisedWei": "0",
+      "totalRefundedWei": "0",
+      "withdrawn": false,
+      "durationSeconds": "86400",
+      "submittedAt": "1794368580",
+      "approvedAtSeconds": "1794368904",
+      "rejectionReason": "",
+      "decidedBy": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "decidedAt": "1794368904",
+      "approvalStatus": "approved",
+      "proposalHash": "0x63fd835eb6dce404b7dae8c3d7f467884d8103911018c4fd3916ba5002d317a7",
+      "decisionHash": "0xdcc65aca9c751ba17da768340d2e8fffcbc91a82b32c580132e5296a5104540d",
+      "snapshot": {
+        "verified": true,
+        "chainId": 11155111,
+        "contractAddress": "0x407145f033F6e19F21e5118ffCA15f0B3644cD55",
+        "campaignId": "1",
+        "blockNumber": 12109737,
+        "blockTimestamp": 1794375708,
+        "blockHash": "0x057e3c5ea0ea04f1f39917d38b403d8fdef8748db3453eaf9492da837eced6f2"
+      }
+    },
+    {
+      "campaignId": "2",
+      "owner": "0x87bdd48964ee07b1c22cd3436d9b1bf4e5e57ca1",
+      "title": "Mang sách đến vùng cao",
+      "description": "abc",
+      "goalWei": "1000000000000000",
+      "deadlineSeconds": "1794460476",
+      "totalRaisedWei": "100000000000000",
+      "totalRefundedWei": "0",
+      "withdrawn": false,
+      "durationSeconds": "86400",
+      "submittedAt": "1794373524",
+      "approvedAtSeconds": "1794374076",
+      "rejectionReason": "",
+      "decidedBy": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "decidedAt": "1794374076",
+      "approvalStatus": "approved",
+      "proposalHash": "0x0391e578fa99dccad7d16b83473c2230df5749528bdcbf4b55d0911f5851c269",
+      "decisionHash": "0xfab84bec590d9735f178f66f6ed21e6e7b398a455aac1a9e9d8fa5920b6aaf3b",
+      "snapshot": {
+        "verified": true,
+        "chainId": 11155111,
+        "contractAddress": "0x407145f033F6e19F21e5118ffCA15f0B3644cD55",
+        "campaignId": "2",
+        "blockNumber": 12109737,
+        "blockTimestamp": 1794375708,
+        "blockHash": "0x057e3c5ea0ea04f1f39917d38b403d8fdef8748db3453eaf9492da837eced6f2"
+      }
+    }
+  ],
+  "eventCounts": {
+    "ReviewerTransferred": 1,
+    "ProposalHashRecorded": 2,
+    "CampaignSubmitted": 2,
+    "DecisionHashRecorded": 2,
+    "CampaignApproved": 2,
+    "PaymentReceipt": 1,
+    "ContributionReceived": 1
+  },
+  "events": [
+    {
+      "name": "ReviewerTransferred",
+      "args": {
+        "previousReviewer": "0x0000000000000000000000000000000000000000",
+        "newReviewer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7"
+      },
+      "transactionHash": "0x2d9c5ad35ba5b72731cef0884f0410bd37e475b1e0b3c704c9a163b5b2a27b0d",
+      "logIndex": 6,
+      "blockNumber": 12109136,
+      "blockHash": "0xba58042c1098a9ea096709f773cd48b7e6f1332079fe31ec9a9fd63b1c3f202d",
+      "timestamp": "2026-11-11T03:39:24.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0x2d9c5ad35ba5b72731cef0884f0410bd37e475b1e0b3c704c9a163b5b2a27b0d"
+    },
+    {
+      "name": "ProposalHashRecorded",
+      "args": {
+        "campaignId": "1",
+        "digest": "0x63fd835eb6dce404b7dae8c3d7f467884d8103911018c4fd3916ba5002d317a7"
+      },
+      "transactionHash": "0xf5d6de64cda1cdd8ff3ad121c4d03bbc5ce936b223ec2ea4a0e62d8f614457cd",
+      "logIndex": 29,
+      "blockNumber": 12109154,
+      "blockHash": "0x887ff992d8090558f5b45b400dbd35f20ed21c1c406789eb7bd9bbe32c5183b2",
+      "timestamp": "2026-11-11T03:43:00.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0xf5d6de64cda1cdd8ff3ad121c4d03bbc5ce936b223ec2ea4a0e62d8f614457cd"
+    },
+    {
+      "name": "CampaignSubmitted",
+      "args": {
+        "id": "1",
+        "owner": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+        "title": "Chiến dịch thử nghiệm",
+        "goal": "10000000000000000",
+        "durationSeconds": "86400"
+      },
+      "transactionHash": "0xf5d6de64cda1cdd8ff3ad121c4d03bbc5ce936b223ec2ea4a0e62d8f614457cd",
+      "logIndex": 30,
+      "blockNumber": 12109154,
+      "blockHash": "0x887ff992d8090558f5b45b400dbd35f20ed21c1c406789eb7bd9bbe32c5183b2",
+      "timestamp": "2026-11-11T03:43:00.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0xf5d6de64cda1cdd8ff3ad121c4d03bbc5ce936b223ec2ea4a0e62d8f614457cd"
+    },
+    {
+      "name": "DecisionHashRecorded",
+      "args": {
+        "campaignId": "1",
+        "status": "1",
+        "digest": "0xdcc65aca9c751ba17da768340d2e8fffcbc91a82b32c580132e5296a5104540d"
+      },
+      "transactionHash": "0x6f8868e85b54b65a7583792e0d2c4e6a97b53f61301595e6a952b04227b58874",
+      "logIndex": 5,
+      "blockNumber": 12109181,
+      "blockHash": "0xd59833cf906e68e9124e0709b7b95d2ef94bbdec7efdb64963e0bbe00c335bb6",
+      "timestamp": "2026-11-11T03:48:24.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0x6f8868e85b54b65a7583792e0d2c4e6a97b53f61301595e6a952b04227b58874"
+    },
+    {
+      "name": "CampaignApproved",
+      "args": {
+        "id": "1",
+        "reviewer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+        "approvedAt": "1794368904",
+        "deadline": "1794455304"
+      },
+      "transactionHash": "0x6f8868e85b54b65a7583792e0d2c4e6a97b53f61301595e6a952b04227b58874",
+      "logIndex": 6,
+      "blockNumber": 12109181,
+      "blockHash": "0xd59833cf906e68e9124e0709b7b95d2ef94bbdec7efdb64963e0bbe00c335bb6",
+      "timestamp": "2026-11-11T03:48:24.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0x6f8868e85b54b65a7583792e0d2c4e6a97b53f61301595e6a952b04227b58874"
+    },
+    {
+      "name": "ProposalHashRecorded",
+      "args": {
+        "campaignId": "2",
+        "digest": "0x0391e578fa99dccad7d16b83473c2230df5749528bdcbf4b55d0911f5851c269"
+      },
+      "transactionHash": "0xa9b0a4113843d096f451b15b7dceceabe207781bff57c918c261535949bb4057",
+      "logIndex": 57,
+      "blockNumber": 12109559,
+      "blockHash": "0xe555ca78b646f3aab929869d81d53e1132abcb8b993b427b5a24dd5be2fd3344",
+      "timestamp": "2026-11-11T05:05:24.000Z",
+      "receiptStatus": 1,
+      "sender": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+      "explorer": "https://sepolia.etherscan.io/tx/0xa9b0a4113843d096f451b15b7dceceabe207781bff57c918c261535949bb4057"
+    },
+    {
+      "name": "CampaignSubmitted",
+      "args": {
+        "id": "2",
+        "owner": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+        "title": "Mang sách đến vùng cao",
+        "goal": "1000000000000000",
+        "durationSeconds": "86400"
+      },
+      "transactionHash": "0xa9b0a4113843d096f451b15b7dceceabe207781bff57c918c261535949bb4057",
+      "logIndex": 58,
+      "blockNumber": 12109559,
+      "blockHash": "0xe555ca78b646f3aab929869d81d53e1132abcb8b993b427b5a24dd5be2fd3344",
+      "timestamp": "2026-11-11T05:05:24.000Z",
+      "receiptStatus": 1,
+      "sender": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+      "explorer": "https://sepolia.etherscan.io/tx/0xa9b0a4113843d096f451b15b7dceceabe207781bff57c918c261535949bb4057"
+    },
+    {
+      "name": "DecisionHashRecorded",
+      "args": {
+        "campaignId": "2",
+        "status": "1",
+        "digest": "0xfab84bec590d9735f178f66f6ed21e6e7b398a455aac1a9e9d8fa5920b6aaf3b"
+      },
+      "transactionHash": "0x7fec3e337c4387111447cfab732d2ad499fa0e11af5d8666fe6064951d6009f4",
+      "logIndex": 20,
+      "blockNumber": 12109604,
+      "blockHash": "0x622906edaddb9dfeee46409678b9e1d03372188abf378662c14ba815632e45fb",
+      "timestamp": "2026-11-11T05:14:36.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0x7fec3e337c4387111447cfab732d2ad499fa0e11af5d8666fe6064951d6009f4"
+    },
+    {
+      "name": "CampaignApproved",
+      "args": {
+        "id": "2",
+        "reviewer": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+        "approvedAt": "1794374076",
+        "deadline": "1794460476"
+      },
+      "transactionHash": "0x7fec3e337c4387111447cfab732d2ad499fa0e11af5d8666fe6064951d6009f4",
+      "logIndex": 21,
+      "blockNumber": 12109604,
+      "blockHash": "0x622906edaddb9dfeee46409678b9e1d03372188abf378662c14ba815632e45fb",
+      "timestamp": "2026-11-11T05:14:36.000Z",
+      "receiptStatus": 1,
+      "sender": "0x9E24Cbc8a02D3435C2fb774cD6Cc22724cf29ea7",
+      "explorer": "https://sepolia.etherscan.io/tx/0x7fec3e337c4387111447cfab732d2ad499fa0e11af5d8666fe6064951d6009f4"
+    },
+    {
+      "name": "PaymentReceipt",
+      "args": {
+        "receiptId": "1",
+        "campaignId": "2",
+        "account": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+        "kind": "0",
+        "amountWei": "100000000000000",
+        "digest": "0xc90701c2af9a46b12cf1f26a97d1a72dae12aa5c25e4d1c14af314db45fe4d89"
+      },
+      "transactionHash": "0xec3eed7eaad37445279525ad47042e45be391615a3ccfd9eaabd965c4590d9fc",
+      "logIndex": 40,
+      "blockNumber": 12109617,
+      "blockHash": "0x8c7c7561a7ef1380efb68867a5d9ce7d7d6fd8b04e9d7ff97f3cb9dfdb4b8dc8",
+      "timestamp": "2026-11-11T05:17:12.000Z",
+      "receiptStatus": 1,
+      "sender": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+      "explorer": "https://sepolia.etherscan.io/tx/0xec3eed7eaad37445279525ad47042e45be391615a3ccfd9eaabd965c4590d9fc",
+      "paymentDigestVerified": true
+    },
+    {
+      "name": "ContributionReceived",
+      "args": {
+        "id": "2",
+        "contributor": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+        "amount": "100000000000000",
+        "totalRaised": "100000000000000"
+      },
+      "transactionHash": "0xec3eed7eaad37445279525ad47042e45be391615a3ccfd9eaabd965c4590d9fc",
+      "logIndex": 41,
+      "blockNumber": 12109617,
+      "blockHash": "0x8c7c7561a7ef1380efb68867a5d9ce7d7d6fd8b04e9d7ff97f3cb9dfdb4b8dc8",
+      "timestamp": "2026-11-11T05:17:12.000Z",
+      "receiptStatus": 1,
+      "sender": "0x87bDD48964EE07b1c22CD3436D9B1bf4e5e57ca1",
+      "explorer": "https://sepolia.etherscan.io/tx/0xec3eed7eaad37445279525ad47042e45be391615a3ccfd9eaabd965c4590d9fc"
+    }
+  ],
+  "acceptance": {
+    "CampaignSubmitted": "On-chain evidence recorded; UI/manual acceptance not asserted.",
+    "CampaignApproved": "On-chain evidence recorded; UI/manual acceptance not asserted.",
+    "CampaignRejected": "No successful event found in collected deployment history.",
+    "ContributionReceived": "On-chain evidence recorded; UI/manual acceptance not asserted.",
+    "FundsWithdrawn": "No successful event found in collected deployment history.",
+    "RefundClaimed": "No successful event found in collected deployment history."
+  },
+  "notVerified": [
+    "Manual MetaMask/UI end-to-end acceptance",
+    "49 Solidity tests rerun with actual optimizer OFF settings",
+    "All negative wallet cases: cancellation, insufficient gas, wallet/network changes during signing",
+    "Full compiler metadata equivalence"
+  ]
+}

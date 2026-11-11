@@ -1,6 +1,6 @@
 # Giao diện contract V3 cho Lý Hiền
 
-Source chính: `blockchain/contracts/Crowdfunding.sol`. ABI là mảng JSON tại `frontend/src/contracts/CrowdfundingV3.json`. Contract V3 dùng workflow `review-v1`, HASH_VERSION = 2, cần deploy mới lên Ethereum Sepolia (11155111). Chưa có địa chỉ V3 được bàn giao; không dùng địa chỉ cũ để thử các hàm mới.
+Source chính: `blockchain/contracts/Crowdfunding.sol`. ABI là mảng JSON tại `frontend/src/contracts/CrowdfundingV3.json`. Contract V3 dùng workflow `review-v1`, HASH_VERSION = 2, đã kiểm tra deployment Sepolia (11155111) tại `0x407145f033F6e19F21e5118ffCA15f0B3644cD55`. Cấu hình build/test lịch sử bên dưới bật optimizer; bản deploy thực tế khớp source khi optimizer tắt. Xem [hồ sơ tích hợp](run-v3-integration.md); không dùng địa chỉ V1/V2.
 
 ## Thay đổi bắt buộc so với V1/V2
 

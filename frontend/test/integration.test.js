@@ -13,15 +13,21 @@ const record = (values = {}) => ({ campaignId: '9007199254740993', owner, title:
   deadlineSeconds: '2000000000', withdrawn: false,
   snapshot: { verified: true, chainId: CHAIN_ID, contractAddress: contract, blockNumber: 123, blockTimestamp: 1999999999 }, ...values })
 
-test('default build has no adapter or enabled operations', () => {
-  assert.equal(adapter, null)
-  assert.ok(Object.values(capabilities(adapter)).every(value => value === false))
+test('V3 adapter enables contract and content operations', () => {
+  const features = capabilities(adapter)
+  assert.equal(adapter.campaignWorkflow, 'review-v1')
+  for (const name of ['connect', 'login', 'create', 'approve', 'reject', 'contribute', 'withdraw', 'refund']) assert.equal(features[name], true)
+  for (const name of ['moderate', 'addComment', 'toggleFavorite', 'loadAdmin', 'reportCampaign', 'loadSocial', 'loadFavorites']) assert.equal(features[name], true)
+  assert.equal(typeof adapter.uploadImage, 'function')
+  assert.equal(typeof adapter.saveMetadata, 'function')
 })
 test('missing integration cannot manufacture a successful transaction', async () => {
   await assert.rejects(runConfirmedOperation(null, { type: 'create' }, owner, () => assert.fail('No transaction expected')))
 })
 test('money retains one wei precision and validates positive input', () => {
   assert.equal(formatAmount(parseAmount('0.100000000000000001')), '0.100000000000000001')
+  assert.equal(parseAmount('\t0.001'), 1000000000000000n)
+  assert.equal(parseAmount(' 0.001\n'), 1000000000000000n)
   for (const value of ['0', '-1', '1e3', '0,1', '0.0000000000000000001']) assert.throws(() => parseAmount(value))
 })
 test('core values come from a verified snapshot and IDs remain strings', () => {
@@ -33,6 +39,17 @@ test('core values come from a verified snapshot and IDs remain strings', () => {
   assert.ok(fundingPercent(campaign) < 100)
   assert.throws(() => normalizeCampaign({ ...record(), snapshot: { ...record().snapshot, verified: false } }))
   assert.throws(() => normalizeCampaign({ ...record(), snapshot: { ...record().snapshot, chainId: 1 } }))
+})
+test('content moderation hides website text without changing financial data; only stable image paths render', () => {
+  const image = '/api/images/12345678-1234-1234-1234-123456789abc'
+  assert.equal(normalizeCampaign(record({ image })).image, image)
+  for (const unsafe of ['/api/images/../../auth/session', '//attacker.example/a.png', 'data:image/svg+xml,evil', 'blob:temporary']) assert.equal(normalizeCampaign(record({ image: unsafe })).image, '')
+  const hidden = normalizeCampaign(record({ image, contentHidden: true }))
+  assert.equal(hidden.image, '')
+  assert.equal(hidden.title, 'Nội dung chiến dịch đã được ẩn')
+  assert.equal(hidden.totalRaisedWei, record().totalRaisedWei)
+  assert.equal(hidden.goalWei, record().goalWei)
+  assert.equal(hidden.status, 'active')
 })
 test('deadline and goal boundaries use block time and bigint, not local time', () => {
   const expired = record({ snapshot: { ...record().snapshot, blockTimestamp: 2000000000 } })

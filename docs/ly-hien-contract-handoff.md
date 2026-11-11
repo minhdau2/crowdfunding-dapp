@@ -1,5 +1,7 @@
 # Bàn giao contract V3 cho Lý Hiền
 
+> Tài liệu bàn giao contract gốc, giữ lại để đối chiếu. Sau tích hợp đã có RPC/receipt/bytecode verification và API V3; xem [cách chạy mới](run-v3-integration.md), [API nội dung](content-api.md) và hồ sơ nghiệm thu mới trong docs/evidence.
+
 Ngày cập nhật: 11/11/2026. Người bàn giao: Nhật Minh. Người tiếp nhận tích hợp: Lý Hiền. Giao diện do Kim Ba phụ trách.
 
 Nhật Minh đã hoàn thiện source duyệt on-chain, ABI, kiểm thử và cấu trúc hash; bổ sung chú thích tiếng Việt trong hợp đồng. Người triển khai báo đã deploy bản mới và cung cấp kết quả đọc `getCampaign(1)` từ Remix ở địa chỉ bên dưới. Chưa có transaction hash deploy hoặc xác minh RPC độc lập trong lần cập nhật tài liệu này. Lý Hiền cần xác minh deployment trước khi mở adapter thật.
